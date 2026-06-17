@@ -78,12 +78,12 @@ require_once __DIR__ . '/../includes/admin-header.php';
 
 <div class="admin-page-header">
     <h2>Tambah Promosi Baru</h2>
-    <a href="promotions" class="btn btn-secondary">Batal & Kembali</a>
+    <a href="promotions" class="btn btn-secondary">&laquo; Kembali</a>
 </div>
 
 <?php if (!empty($errors)): ?>
-    <div class="alert alert-danger" style="margin-bottom: 20px; background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px;">
-        <ul style="margin: 0; padding-left: 20px;">
+    <div class="alert alert-error">
+        <ul>
             <?php foreach ($errors as $error): ?>
                 <li><?= sanitizeOutput($error) ?></li>
             <?php endforeach; ?>
@@ -91,11 +91,12 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 <?php endif; ?>
 
-<form action="promotion-add" method="POST" class="admin-form-container">
+<div class="admin-form-container">
+<form action="promotion-add" method="POST" class="admin-form">
     <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
 
     <div class="form-group">
-        <label for="name">Nama Promosi <span class="text-danger">*</span></label>
+        <label for="name">Nama Promosi <span class="required">*</span></label>
         <input type="text" id="name" name="name" class="form-control" value="<?= sanitizeOutput($_POST['name'] ?? '') ?>" required>
     </div>
 
@@ -105,7 +106,7 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 
     <div class="form-group">
-        <label for="promo_type">Tipe Promosi <span class="text-danger">*</span></label>
+        <label for="promo_type">Tipe Promosi <span class="required">*</span></label>
         <select id="promo_type" name="promo_type" class="form-control" required onchange="togglePromoFields()">
             <option value="cart_discount" <?= (($_POST['promo_type'] ?? '') === 'cart_discount') ? 'selected' : '' ?>>Diskon Keranjang</option>
             <option value="free_shipping" <?= (($_POST['promo_type'] ?? '') === 'free_shipping') ? 'selected' : '' ?>>Gratis Ongkir</option>
@@ -114,8 +115,8 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </select>
     </div>
 
-    <div class="form-group" id="field-target_category_id" style="display: none;">
-        <label for="target_category_id">Kategori Target <span class="text-danger">*</span></label>
+    <div class="form-group" id="field-target_category_id" style="display:none;">
+        <label for="target_category_id">Kategori Target <span class="required">*</span></label>
         <select id="target_category_id" name="target_category_id" class="form-control">
             <option value="">-- Pilih Kategori --</option>
             <?php foreach ($categories as $cat): ?>
@@ -124,8 +125,8 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </select>
     </div>
 
-    <div class="form-group" id="field-free_item_id" style="display: none;">
-        <label for="free_item_id">Produk Gratis <span class="text-danger">*</span></label>
+    <div class="form-group" id="field-free_item_id" style="display:none;">
+        <label for="free_item_id">Produk Gratis <span class="required">*</span></label>
         <select id="free_item_id" name="free_item_id" class="form-control">
             <option value="">-- Pilih Produk --</option>
             <?php foreach ($products as $prod): ?>
@@ -134,48 +135,51 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </select>
     </div>
 
-    <div class="form-row" style="display: flex; gap: 20px;">
-        <div class="form-group" style="flex: 1;" id="field-discount_type">
+    <div class="form-row" id="field-discount_type">
+        <div class="form-group">
             <label for="discount_type">Tipe Nilai Diskon</label>
             <select id="discount_type" name="discount_type" class="form-control">
                 <option value="fixed" <?= (($_POST['discount_type'] ?? '') === 'fixed') ? 'selected' : '' ?>>Nominal Tetap (Rp)</option>
                 <option value="percentage" <?= (($_POST['discount_type'] ?? '') === 'percentage') ? 'selected' : '' ?>>Persentase (%)</option>
             </select>
         </div>
-        <div class="form-group" style="flex: 1;" id="field-discount_value">
+        <div class="form-group">
             <label for="discount_value">Nilai Diskon</label>
             <input type="number" id="discount_value" name="discount_value" class="form-control" value="<?= (int)($_POST['discount_value'] ?? 0) ?>" min="0">
         </div>
     </div>
 
     <div class="form-group">
-        <label for="min_spend">Minimal Belanja (Rp) <small class="text-muted">(Isi 0 jika tanpa minimal)</small></label>
+        <label for="min_spend">Minimal Belanja (Rp)</label>
         <input type="number" id="min_spend" name="min_spend" class="form-control" value="<?= (int)($_POST['min_spend'] ?? 0) ?>" min="0">
+        <small class="form-help">Isi 0 jika tanpa minimal belanja.</small>
     </div>
 
-    <div class="form-row" style="display: flex; gap: 20px;">
-        <div class="form-group" style="flex: 1;">
-            <label for="start_date">Mulai Berlaku <span class="text-danger">*</span></label>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="start_date">Mulai Berlaku <span class="required">*</span></label>
             <input type="datetime-local" id="start_date" name="start_date" class="form-control" value="<?= sanitizeOutput($_POST['start_date'] ?? date('Y-m-d\TH:i')) ?>" required>
         </div>
-        <div class="form-group" style="flex: 1;">
-            <label for="end_date">Selesai Berlaku <span class="text-danger">*</span></label>
+        <div class="form-group">
+            <label for="end_date">Selesai Berlaku <span class="required">*</span></label>
             <input type="datetime-local" id="end_date" name="end_date" class="form-control" value="<?= sanitizeOutput($_POST['end_date'] ?? date('Y-m-d\TH:i', strtotime('+1 month'))) ?>" required>
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="toggle-wrap">
         <label class="toggle-switch">
             <input type="checkbox" name="is_active" value="1" <?= isset($_POST['is_active']) || $_SERVER['REQUEST_METHOD'] !== 'POST' ? 'checked' : '' ?>>
             <span class="toggle-slider"></span>
         </label>
-        <span style="margin-left: 10px; font-weight: 500;">Aktifkan Promosi Ini</span>
+        <label>Aktifkan Promosi Ini</label>
     </div>
 
-    <div class="form-actions" style="margin-top: 30px;">
-        <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">Simpan Promosi</button>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Simpan Promosi</button>
+        <a href="promotions" class="btn btn-secondary">Batal</a>
     </div>
 </form>
+</div>
 
 <script>
 function togglePromoFields() {

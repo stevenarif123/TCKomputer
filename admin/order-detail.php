@@ -97,13 +97,13 @@ function getPaymentMethodLabel(string $method): string
 ?>
 
 <div class="admin-order-detail">
-    <div class="detail-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="detail-header">
         <h2>Pesanan: <?= sanitizeOutput($order['order_code']) ?></h2>
-        <div style="display: flex; gap: 8px;">
-            <a href="../print-invoice?id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 4px;">
-                <span class="material-symbols-outlined" style="font-size: 18px;">print</span> Cetak Invoice
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="../print-invoice?id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-primary">
+                <span class="material-symbols-outlined">print</span> Cetak Invoice
             </a>
-            <a href="orders" class="btn btn-secondary">&laquo; Kembali ke Daftar</a>
+            <a href="orders" class="btn btn-secondary">&laquo; Kembali</a>
         </div>
     </div>
 

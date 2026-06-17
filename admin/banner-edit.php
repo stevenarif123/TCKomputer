@@ -131,6 +131,11 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 <?php endif; ?>
 
+<div class="admin-page-header">
+    <h2>Edit Banner</h2>
+    <a href="banners" class="btn btn-secondary">&laquo; Kembali</a>
+</div>
+
 <form method="POST" action="banner-edit?id=<?= (int) $bannerId ?>" enctype="multipart/form-data" class="admin-form">
     <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
 

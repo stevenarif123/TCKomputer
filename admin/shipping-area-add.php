@@ -90,13 +90,18 @@ require_once __DIR__ . '/../includes/admin-header.php';
 </div>
 <?php endif; ?>
 
+<div class="admin-page-header">
+    <h2>Tambah Area Pengiriman</h2>
+    <a href="shipping-areas" class="btn btn-secondary">&laquo; Kembali</a>
+</div>
+
 <div class="admin-form-container">
     <form action="" method="POST" class="admin-form">
         <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
 
         <div class="form-group">
             <label for="regency">Kabupaten/Kota <span class="required">*</span></label>
-            <select id="regency" name="regency" required style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #fff; color: #0b1c30; outline: none; margin-top: 4px;">
+            <select id="regency" name="regency" required>
                 <option value="">-- Pilih Kabupaten/Kota --</option>
                 <option value="Tana Toraja" <?= (isset($formData['regency']) && $formData['regency'] === 'Tana Toraja') ? 'selected' : '' ?>>Tana Toraja</option>
                 <option value="Toraja Utara" <?= (isset($formData['regency']) && $formData['regency'] === 'Toraja Utara') ? 'selected' : '' ?>>Toraja Utara</option>

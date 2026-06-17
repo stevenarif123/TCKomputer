@@ -1,15 +1,55 @@
+# Set default index to prevent 403 when Options -Indexes is used
+DirectoryIndex index.php
+
 # Disable directory listing
 Options -Indexes
 
 # Enable Rewrite Engine
 RewriteEngine On
 
-# Block direct access to config and includes directories
+# Block direct access to config, includes, and tests directories
 RewriteRule ^config/ - [F,L]
 RewriteRule ^includes/ - [F,L]
+RewriteRule ^tests/ - [F,L]
 
 # Block access to database backups, settings, composer files, test results, and logs
 <FilesMatch "^\.|\.(sql|json|xml|md|cache|result|log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ── Secret and Tooling Exposure Lock-Down (Req 15.1, 15.2, 15.3) ─────────────
+# Block environment and database files (credentials must never be served)
+<FilesMatch "^(\.env|database\.sql|composer\.json|composer\.lock|phpunit\.xml|phpunit\.phar)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block debug and tooling scripts from public HTTP access
+<FilesMatch "^(debug\.php|debug_finfo_test\.php|clean_db_settings_prod\.php|restore_env\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block migrate_*.php and seed_*.php scripts (run from CLI only, not via web)
+# NOTE: migrate_analytics_security.php is also blocked here (Req 15.4, 15.5).
+# To run it once: comment out this block, run via browser with ?_run=1, then restore.
+<FilesMatch "^(migrate_|seed_).+\.php$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

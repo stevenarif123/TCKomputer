@@ -8,9 +8,26 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../config/security.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Metode request tidak valid.']);
+    exit;
+}
+
+// CSRF validation — must run before any DB access (Req 12.1, 12.2, 12.5)
+if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+    echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid, silakan muat ulang halaman.']);
+    exit;
+}
+
+// Rate limiting — generous threshold for registration (Req 11.1)
+$pdo   = getDBConnection();
+$regIdentifier = trim($_POST['username'] ?? '') . ':' . (trim($_POST['phone'] ?? ''));
+$rlKey = buildRateLimitKey('register', $regIdentifier, $_SERVER['REMOTE_ADDR'] ?? '');
+$rl    = checkRateLimit($pdo, 'register', $rlKey, 10, 900);
+if (!$rl['allowed']) {
+    echo json_encode(['success' => false, 'message' => 'Terlalu banyak percobaan. Coba lagi dalam ' . $rl['retry_after'] . ' detik.']);
     exit;
 }
 
@@ -78,7 +95,7 @@ if (!isValidPhoneNumber($phone)) {
 }
 
 try {
-    $pdo = getDBConnection();
+    // pdo already initialized above for rate limit check
     
     // Check if username already exists
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");

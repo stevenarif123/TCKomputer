@@ -4,6 +4,11 @@
  * Premium Glassmorphism Navigation, Tailwind CSS config, mobile-first meta.
  */
 
+// Security hardening — must run before session_start and before any output
+require_once __DIR__ . '/../config/security.php';
+configureSecureSession();   // Set HttpOnly, SameSite=Lax (+ Secure on HTTPS) on session cookie
+applySecurityHeaders();     // Emit X-Frame-Options, CSP, etc.
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -12,11 +17,21 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include configuration files
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../config/analytics.php';
 
 // Fetch store settings
 $pdo = getDBConnection();
 $stmtSettings = $pdo->query("SELECT * FROM store_settings LIMIT 1");
 $storeSettings = $stmtSettings->fetch();
+
+// Record storefront visit (best-effort, never throws, deduped per page per session)
+recordVisit($pdo, [
+    'session_id' => session_id(),
+    'ip'         => $_SERVER['REMOTE_ADDR']     ?? '',
+    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+    'page_url'   => $_SERVER['REQUEST_URI']     ?? '/',
+    'referrer'   => $_SERVER['HTTP_REFERER']    ?? null,
+]);
 
 $storeName = $storeSettings['store_name'] ?? 'TC Komputer';
 $storeLogo = $storeSettings['logo'] ?? null;

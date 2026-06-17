@@ -136,83 +136,98 @@ $stmtEligible = $pdo->query(
 $eligibleProducts = $stmtEligible->fetchAll();
 ?>
 
-<div class="admin-grid-layout" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
-    
-    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; grid-template-areas: 'add' 'settings'; @media(min-width: 1024px) { grid-template-columns: 2fr 1fr; grid-template-areas: 'add settings'; }">
+<div class="flash-sales-page" style="display:flex; flex-direction:column; gap:24px;">
+
+    <div class="grid-2col-asym">
         <!-- Add Product to Flash Sale Card -->
-        <div class="admin-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--outline-color, #c6c6cd); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); grid-area: add;">
-            <h3 style="margin-top: 0; margin-bottom: 15px; font-weight: 800;">Atur Flash Sale Baru</h3>
-            
+        <div class="admin-card">
+            <h3 class="card-section-title">
+                <span class="material-symbols-outlined" style="color:var(--admin-warning);">bolt</span>
+                Atur Flash Sale Baru
+            </h3>
+
             <?php if (empty($eligibleProducts)): ?>
-                <p class="text-muted" style="margin: 0; font-size: 14px;">Semua produk aktif sudah memiliki promo aktif.</p>
+                <p style="margin:0; font-size:0.875rem; color:var(--admin-text-muted);">Semua produk aktif sudah memiliki promo aktif.</p>
             <?php else: ?>
-                <form method="POST" action="flash-sales" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+                <form method="POST" action="flash-sales">
                     <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
                     <input type="hidden" name="action" value="save_promo">
-                    
-                    <div class="form-group" style="flex: 2; min-width: 200px; margin-bottom: 0;">
-                        <label for="product_id" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Pilih Produk</label>
-                        <select id="product_id" name="product_id" required style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none; background: white;" onchange="updateRegularPriceHint()">
+
+                    <div class="form-group">
+                        <label for="product_id">Pilih Produk</label>
+                        <select id="product_id" name="product_id" required onchange="updateRegularPriceHint()">
                             <option value="">-- Pilih Produk --</option>
                             <?php foreach ($eligibleProducts as $ep): ?>
                                 <option value="<?= (int)$ep['id'] ?>" data-price="<?= (int)$ep['selling_price'] ?>" data-stock="<?= (int)$ep['stock'] ?>">
-                                    <?= sanitizeOutput($ep['name']) ?> (Harga Jual: <?= formatRupiah($ep['selling_price']) ?>, Stok: <?= (int)$ep['stock'] ?>)
+                                    <?= sanitizeOutput($ep['name']) ?> (Harga: <?= formatRupiah($ep['selling_price']) ?>, Stok: <?= (int)$ep['stock'] ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
-                    <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
-                        <label for="promo_price" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Harga Promo (Rp)</label>
-                        <input type="number" id="promo_price" name="promo_price" required min="1" placeholder="Harga diskon baru" style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none;">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="promo_price">Harga Promo (Rp)</label>
+                            <input type="number" id="promo_price" name="promo_price" required min="1" placeholder="Harga diskon baru">
+                        </div>
+                        <div class="form-group">
+                            <label for="promo_stock">Stok Promo</label>
+                            <input type="number" id="promo_stock" name="promo_stock" required min="1" placeholder="Kuota promo">
+                        </div>
                     </div>
 
-                    <div class="form-group" style="flex: 1; min-width: 100px; margin-bottom: 0;">
-                        <label for="promo_stock" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Stok Promo</label>
-                        <input type="number" id="promo_stock" name="promo_stock" required min="1" placeholder="Kuota promo" style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none;">
+                    <div class="form-actions" style="padding-top:16px; margin-top:0; border-top:none;">
+                        <button type="submit" class="btn btn-primary">Aktifkan Promo</button>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; height: 38px;">Aktifkan Promo</button>
                 </form>
             <?php endif; ?>
         </div>
 
         <!-- Configure Flash Sale Settings Card -->
-        <div class="admin-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--outline-color, #c6c6cd); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); grid-area: settings;">
-            <h3 style="margin-top: 0; margin-bottom: 15px; font-weight: 800;">Pengaturan Flash Sale</h3>
-            <form method="POST" action="flash-sales" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="admin-card">
+            <h3 class="card-section-title">
+                <span class="material-symbols-outlined" style="color:var(--admin-info);">settings</span>
+                Pengaturan Flash Sale
+            </h3>
+            <form method="POST" action="flash-sales" style="display:flex; flex-direction:column; gap:16px;">
                 <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
                 <input type="hidden" name="action" value="update_settings">
-                
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="flash_sale_title" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Judul Flash Sale</label>
-                    <input type="text" id="flash_sale_title" name="flash_sale_title" value="<?= sanitizeOutput($flashSaleTitle) ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none; background: white;">
+
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="flash_sale_title">Judul Flash Sale</label>
+                    <input type="text" id="flash_sale_title" name="flash_sale_title" value="<?= sanitizeOutput($flashSaleTitle) ?>" required>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="flash_sale_subtitle" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Label Hitung Mundur</label>
-                    <input type="text" id="flash_sale_subtitle" name="flash_sale_subtitle" value="<?= sanitizeOutput($flashSaleSubtitle) ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none; background: white;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="flash_sale_subtitle">Label Hitung Mundur</label>
+                    <input type="text" id="flash_sale_subtitle" name="flash_sale_subtitle" value="<?= sanitizeOutput($flashSaleSubtitle) ?>" required>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="flash_sale_end" style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 5px;">Waktu Berakhir</label>
-                    <input type="datetime-local" id="flash_sale_end" name="flash_sale_end" value="<?= $inputDateTime ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid #c6c6cd; border-radius: 8px; outline: none; background: white;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="flash_sale_end">Waktu Berakhir</label>
+                    <input type="datetime-local" id="flash_sale_end" name="flash_sale_end" value="<?= $inputDateTime ?>" required>
                 </div>
 
-                <div class="form-group form-checkbox" style="margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="flash_sale_active" name="flash_sale_active" value="1" <?= $flashSaleActive ? 'checked' : '' ?> style="width: 16px; height: 16px; cursor: pointer;">
-                    <label for="flash_sale_active" style="font-weight: 700; font-size: 13px; cursor: pointer; user-select: none;">Flash Sale Aktif secara Global</label>
+                <div class="toggle-wrap">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="flash_sale_active" name="flash_sale_active" value="1" <?= $flashSaleActive ? 'checked' : '' ?>>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label for="flash_sale_active">Flash Sale Aktif secara Global</label>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" style="padding: 8px 15px; font-weight: 700; border-radius: 8px; cursor: pointer; width: 100%;">Simpan Pengaturan</button>
+
+                <button type="submit" class="btn btn-primary btn-block">Simpan Pengaturan</button>
             </form>
         </div>
     </div>
 
     <!-- Active Flash Sales List -->
-    <div class="admin-card" style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--outline-color, #c6c6cd); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-top: 10px;">
-        <h3 style="margin-top: 0; margin-bottom: 15px; font-weight: 800;">Daftar Flash Sale Aktif</h3>
-        
+    <div class="admin-card">
+        <h3 class="card-section-title">
+            <span class="material-symbols-outlined" style="color:var(--admin-primary);">list_alt</span>
+            Daftar Flash Sale Aktif
+        </h3>
+
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
@@ -220,79 +235,64 @@ $eligibleProducts = $stmtEligible->fetchAll();
                         <th>#</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
-                        <th class="text-right">Harga Jual</th>
-                        <th class="text-right">Harga Promo</th>
-                        <th class="text-center">Hemat (%)</th>
-                        <th class="text-center">Stok Promo</th>
-                        <th class="text-center">Stok Fisik</th>
-                        <th class="text-center">Status</th>
+                        <th style="text-align:right;">Harga Jual</th>
+                        <th style="text-align:right;">Harga Promo</th>
+                        <th style="text-align:center;">Hemat</th>
+                        <th style="text-align:center;">Stok Promo</th>
+                        <th style="text-align:center;">Stok Fisik</th>
+                        <th style="text-align:center;">Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($flashSales)): ?>
                         <tr>
-                            <td colspan="10" class="text-center" style="padding: 20px; color: #76777d; font-style: italic;">Tidak ada produk Flash Sale yang sedang aktif saat ini.</td>
+                            <td colspan="10" class="empty-message" style="padding:32px;">Tidak ada produk Flash Sale yang sedang aktif.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($flashSales as $index => $fs): ?>
-                        <?php 
+                        <?php
                         $regularPrice = (int)$fs['selling_price'];
                         $promoPrice = (int)$fs['promo_price'];
                         $savePercent = $regularPrice > 0 ? round((1 - $promoPrice / $regularPrice) * 100) : 0;
                         ?>
                         <tr>
                             <td><?= $index + 1 ?></td>
-                            <td>
-                                <strong><?= sanitizeOutput($fs['name']) ?></strong>
-                            </td>
+                            <td><strong><?= sanitizeOutput($fs['name']) ?></strong></td>
                             <td><?= sanitizeOutput($fs['category_name'] ?: '-') ?></td>
-                            <td class="text-right"><?= formatRupiah($regularPrice) ?></td>
-                            <td class="text-right" style="color: #ba1a1a; font-weight: bold;"><?= formatRupiah($promoPrice) ?></td>
-                            <td class="text-center">
-                                <span style="background: #ffdad6; color: #ba1a1a; padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: bold;">
-                                    <?= $savePercent ?>%
-                                </span>
+                            <td style="text-align:right;"><?= formatRupiah($regularPrice) ?></td>
+                            <td style="text-align:right; color:var(--admin-danger); font-weight:700;"><?= formatRupiah($promoPrice) ?></td>
+                            <td style="text-align:center;">
+                                <span class="badge badge-habis"><?= $savePercent ?>%</span>
                             </td>
-                            <td class="text-center">
-                                <strong><?= (int)$fs['promo_stock'] ?></strong> / <span class="text-muted"><?= (int)$fs['promo_stock_initial'] ?></span>
+                            <td style="text-align:center;">
+                                <strong><?= (int)$fs['promo_stock'] ?></strong> / <span style="color:var(--admin-text-muted);"><?= (int)$fs['promo_stock_initial'] ?></span>
                             </td>
-                            <td class="text-center"><?= (int)$fs['stock'] ?></td>
-                            <td class="text-center">
-                                <?php if ($fs['status'] === 'ready'): ?>
-                                    <span style="color: #005321; font-weight: 700; font-size: 12px;">Ready</span>
-                                <?php elseif ($fs['status'] === 'po'): ?>
-                                    <span style="color: #b05c00; font-weight: 700; font-size: 12px;">Pre-Order</span>
-                                <?php else: ?>
-                                    <span style="color: #93000a; font-weight: 700; font-size: 12px;">Habis</span>
-                                <?php endif; ?>
+                            <td style="text-align:center;"><?= (int)$fs['stock'] ?></td>
+                            <td style="text-align:center;">
+                                <?php
+                                $statusMap = ['ready' => ['label' => 'Ready', 'color' => 'var(--admin-success)'], 'po' => ['label' => 'Pre-Order', 'color' => 'var(--admin-warning)'], 'habis' => ['label' => 'Habis', 'color' => 'var(--admin-danger)']];
+                                $s = $statusMap[$fs['status']] ?? ['label' => $fs['status'], 'color' => 'var(--admin-text-muted)'];
+                                ?>
+                                <span style="color:<?= $s['color'] ?>; font-weight:700; font-size:12px;"><?= $s['label'] ?></span>
                             </td>
                             <td>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <!-- Quick Edit price and stock form -->
-                                    <form method="POST" action="flash-sales" style="display: flex; gap: 4px; align-items: center; margin: 0;">
+                                <div class="action-links" style="flex-wrap:nowrap; gap:8px;">
+                                    <form method="POST" action="flash-sales" style="display:flex; gap:4px; align-items:center; margin:0;">
                                         <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
                                         <input type="hidden" name="action" value="save_promo">
                                         <input type="hidden" name="product_id" value="<?= (int)$fs['id'] ?>">
-                                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                                            <div style="display: flex; align-items: center; gap: 4px;">
-                                                <span style="font-size: 10px; width: 60px; color: #76777d;">Harga:</span>
-                                                <input type="number" name="promo_price" value="<?= $promoPrice ?>" required min="1" style="width: 100px; padding: 4px 8px; border: 1px solid #c6c6cd; border-radius: 6px; font-size: 12px;">
-                                            </div>
-                                            <div style="display: flex; align-items: center; gap: 4px;">
-                                                <span style="font-size: 10px; width: 60px; color: #76777d;">Stok Promo:</span>
-                                                <input type="number" name="promo_stock" value="<?= (int)$fs['promo_stock'] ?>" required min="1" max="<?= (int)$fs['stock'] ?>" style="width: 100px; padding: 4px 8px; border: 1px solid #c6c6cd; border-radius: 6px; font-size: 12px;">
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="btn btn-sm btn-secondary" style="padding: 8px 10px; font-size: 11px; border-radius: 6px; align-self: center; margin-left: 5px;">Simpan</button>
+                                        <input type="number" name="promo_price" value="<?= $promoPrice ?>" required min="1"
+                                               style="width:90px; padding:4px 8px; border:1px solid var(--admin-border); border-radius:6px; font-size:12px; background:var(--admin-card-bg); color:var(--admin-text);">
+                                        <input type="number" name="promo_stock" value="<?= (int)$fs['promo_stock'] ?>" required min="1" max="<?= (int)$fs['stock'] ?>"
+                                               style="width:70px; padding:4px 8px; border:1px solid var(--admin-border); border-radius:6px; font-size:12px; background:var(--admin-card-bg); color:var(--admin-text);">
+                                        <button type="submit" class="btn btn-sm btn-secondary">Simpan</button>
                                     </form>
-                                    
-                                    <!-- Stop Promo -->
-                                    <form method="POST" action="flash-sales" onsubmit="return confirm('Batalkan promo Flash Sale untuk produk ini?');" style="margin: 0;">
+                                    <form method="POST" action="flash-sales" onsubmit="return confirm('Batalkan promo Flash Sale untuk produk ini?');" style="margin:0;">
                                         <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
                                         <input type="hidden" name="action" value="remove_promo">
                                         <input type="hidden" name="id" value="<?= (int)$fs['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-danger" style="padding: 5px 10px; font-size: 11px; border-radius: 6px;">Batalkan</button>
+                                        <button type="submit" class="btn btn-sm btn-danger">Batalkan</button>
                                     </form>
                                 </div>
                             </td>
@@ -303,6 +303,7 @@ $eligibleProducts = $stmtEligible->fetchAll();
             </table>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -311,15 +312,11 @@ function updateRegularPriceHint() {
     const selectedOption = select.options[select.selectedIndex];
     const promoPriceInput = document.getElementById('promo_price');
     const promoStockInput = document.getElementById('promo_stock');
-    
     if (selectedOption && selectedOption.value) {
         const regularPrice = parseInt(selectedOption.getAttribute('data-price')) || 0;
         const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
-        // Set maximum limit for promo price
         promoPriceInput.max = regularPrice - 1;
-        // Suggest a starting price that is 15% off
         promoPriceInput.value = Math.round(regularPrice * 0.85);
-        // Set maximum limit for promo stock
         promoStockInput.max = stock;
         promoStockInput.value = stock;
     } else {

@@ -462,3 +462,118 @@ function paginate(PDO $pdo, string $query, array $params = [], int $perPage = 12
         'current_page' => $currentPage,
     ];
 }
+
+/**
+ * Determine whether a redirect target is safe (same-host or local relative path).
+ *
+ * A target is safe when:
+ * - It is a relative path starting with exactly one '/' (no '//').
+ * - It is an absolute URL whose host matches $allowedHost (case-insensitive,
+ *   including any explicit port).
+ *
+ * A target is NOT safe when:
+ * - It is null, empty, or whitespace-only.
+ * - It exceeds 2048 characters.
+ * - It starts with '//' (protocol-relative — browser resolves as absolute).
+ * - It uses a dangerous scheme: javascript:, data:, vbscript:, file:.
+ * - It is an absolute URL pointing to a different host.
+ *
+ * @param string|null $target      The candidate redirect target (untrusted).
+ * @param string      $allowedHost The allowed host (e.g. $_SERVER['HTTP_HOST']).
+ * @return bool True if safe to redirect to.
+ * @pure
+ */
+function isSafeRedirectTarget(?string $target, string $allowedHost): bool
+{
+    if ($target === null || trim($target) === '') {
+        return false;
+    }
+
+    $t = trim($target);
+
+    // Length guard (Req 13.2)
+    if (strlen($t) > 2048) {
+        return false;
+    }
+
+    // Reject dangerous schemes (Req 13.2)
+    if (preg_match('#^\s*(javascript|data|vbscript|file):#i', $t)) {
+        return false;
+    }
+
+    // Reject protocol-relative '//host' (Req 13.2)
+    if (str_starts_with($t, '//')) {
+        return false;
+    }
+
+    // Relative path starting with single '/' — safe (Req 13.1)
+    if (str_starts_with($t, '/') && !str_starts_with($t, '//')) {
+        return true;
+    }
+
+    // Absolute URL — check scheme and host (Req 13.2)
+    if (preg_match('#^[a-z][a-z0-9+.\-]*://#i', $t)) {
+        // Only http and https schemes are allowed
+        if (!preg_match('#^https?://#i', $t)) {
+            return false;
+        }
+        $host = parse_url($t, PHP_URL_HOST);
+        if ($host === null || $host === false) {
+            return false;
+        }
+        return strcasecmp($host, $allowedHost) === 0;
+    }
+
+    // Relative path without leading '/' (e.g. 'index', 'products') — safe as local
+    return true;
+}
+
+/**
+ * Return a guaranteed-safe redirect destination.
+ *
+ * If $target passes isSafeRedirectTarget(), it is returned as-is (preserving
+ * query string and fragment). Otherwise $fallback is returned.
+ * If $fallback itself fails safety checks, '/' is returned (Req 13.6).
+ *
+ * @param string|null $target      Untrusted redirect target.
+ * @param string      $allowedHost The allowed host.
+ * @param string      $fallback    Local fallback path (default 'index').
+ * @return string A safe redirect destination.
+ * @pure
+ */
+function sanitizeRedirectTarget(?string $target, string $allowedHost, string $fallback = 'index'): string
+{
+    if (isSafeRedirectTarget($target, $allowedHost)) {
+        return (string)$target;
+    }
+
+    // Try fallback
+    if (isSafeRedirectTarget($fallback, $allowedHost)) {
+        return $fallback;
+    }
+
+    // Ultimate safe fallback (Req 13.6)
+    return '/';
+}
+
+/**
+ * Perform a redirect to a validated same-host/relative target.
+ *
+ * Wraps the existing redirect() helper. Uses the current HTTP_HOST as the
+ * allowed host. Falls back to $fallback (or '/') on unsafe targets.
+ *
+ * @param string|null $target   Untrusted redirect target (e.g. HTTP_REFERER).
+ * @param string      $fallback Local fallback path (default 'index').
+ * @param string      $message  Flash message text.
+ * @param string      $type     Flash message type: success, warning, error.
+ */
+function safeRedirect(
+    ?string $target,
+    string  $fallback = 'index',
+    string  $message  = '',
+    string  $type     = 'success'
+): void {
+    $allowedHost = $_SERVER['HTTP_HOST'] ?? '';
+    $safe = sanitizeRedirectTarget($target, $allowedHost, $fallback);
+    redirect($safe, $message, $type);
+}

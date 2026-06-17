@@ -14,6 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// CSRF validation — must run before any DB access (Req 12.1, 12.2, 12.5)
+if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+    echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid, silakan muat ulang halaman.']);
+    exit;
+}
+
 // Ensure the user is logged in
 if (!isset($_SESSION['customer_id'])) {
     echo json_encode(['success' => false, 'message' => 'Sesi Anda telah berakhir, silakan masuk kembali.']);

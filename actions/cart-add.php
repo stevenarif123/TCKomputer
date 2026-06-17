@@ -20,8 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Validate CSRF token
 $token = $_POST['csrf_token'] ?? '';
 if (!validateCSRFToken($token)) {
-    redirect(
-        $_SERVER['HTTP_REFERER'] ?? 'index',
+    safeRedirect(
+        $_SERVER['HTTP_REFERER'] ?? null,
+        'index',
         'Permintaan tidak valid, silakan coba lagi',
         'error'
     );
@@ -49,8 +50,9 @@ $product = $stmt->fetch();
 
 // Product not found or inactive
 if (!$product) {
-    redirect(
-        $_SERVER['HTTP_REFERER'] ?? 'index',
+    safeRedirect(
+        $_SERVER['HTTP_REFERER'] ?? null,
+        'index',
         'Produk tidak ditemukan',
         'error'
     );
@@ -58,8 +60,9 @@ if (!$product) {
 
 // Product sold out (habis)
 if ($product['status'] === 'habis') {
-    redirect(
-        $_SERVER['HTTP_REFERER'] ?? 'index',
+    safeRedirect(
+        $_SERVER['HTTP_REFERER'] ?? null,
+        'index',
         'Produk tidak tersedia',
         'error'
     );
@@ -67,8 +70,9 @@ if ($product['status'] === 'habis') {
 
 // Ready product with zero stock
 if ($product['status'] === 'ready' && $product['stock'] <= 0) {
-    redirect(
-        $_SERVER['HTTP_REFERER'] ?? 'index',
+    safeRedirect(
+        $_SERVER['HTTP_REFERER'] ?? null,
+        'index',
         'Stok habis',
         'error'
     );

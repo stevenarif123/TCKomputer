@@ -1,9 +1,13 @@
 <?php
 /**
  * Admin Login Page
- * Handles admin authentication with CSRF protection.
+ * Handles admin authentication with CSRF protection and brute-force rate limiting.
  * Beautifully redesigned with a premium glassmorphic dark theme.
  */
+
+require_once __DIR__ . '/../config/security.php';
+configureSecureSession();
+applySecurityHeaders();
 
 session_start();
 
@@ -29,10 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCSRFToken($token)) {
         $error = 'Permintaan tidak valid, silakan coba lagi';
     } else {
-        if (adminLogin($pdo, $email, $password)) {
+        // Rate limit check — scope by action + hashed email + client IP
+        $rlKey = buildRateLimitKey('admin_login', $email, $_SERVER['REMOTE_ADDR'] ?? '');
+        $rl    = checkRateLimit($pdo, 'admin_login', $rlKey, 5, 900);
+
+        if (!$rl['allowed']) {
+            $error = 'Terlalu banyak percobaan login. Coba lagi dalam ' . $rl['retry_after'] . ' detik.';
+        } elseif (adminLogin($pdo, $email, $password)) {
+            // Success — clear rate limit, redirect
+            clearRateLimit($pdo, 'admin_login', $rlKey);
             header('Location: index');
             exit;
         } else {
+            // Failure — record attempt
+            recordAuthAttempt($pdo, 'admin_login', $rlKey);
             $error = 'Email atau password salah';
         }
     }

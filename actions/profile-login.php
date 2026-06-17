@@ -8,9 +8,16 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../config/security.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Metode request tidak valid.']);
+    exit;
+}
+
+// CSRF validation — must run before any DB access (Req 12.1, 12.2, 12.5)
+if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+    echo json_encode(['success' => false, 'message' => 'Permintaan tidak valid, silakan muat ulang halaman.']);
     exit;
 }
 
@@ -27,8 +34,17 @@ if (empty($password)) {
     exit;
 }
 
+// Rate limiting — generous threshold for buyers (Req 11.1)
+$pdo   = getDBConnection();
+$rlKey = buildRateLimitKey('login', $loginIdentifier, $_SERVER['REMOTE_ADDR'] ?? '');
+$rl    = checkRateLimit($pdo, 'login', $rlKey, 10, 900);
+if (!$rl['allowed']) {
+    echo json_encode(['success' => false, 'message' => 'Terlalu banyak percobaan. Coba lagi dalam ' . $rl['retry_after'] . ' detik.']);
+    exit;
+}
+
 try {
-    $pdo = getDBConnection();
+    // pdo already initialized above for rate limit check
     
     // Fetch user matching username or phone number
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR phone = ?");
@@ -36,9 +52,14 @@ try {
     $user = $stmt->fetch();
     
     if (!$user || !password_verify($password, $user['password'])) {
+        // Record failed attempt
+        recordAuthAttempt($pdo, 'login', $rlKey);
         echo json_encode(['success' => false, 'message' => 'Username/Nomor Telepon atau kata sandi salah.']);
         exit;
     }
+    
+    // Success — clear rate limit
+    clearRateLimit($pdo, 'login', $rlKey);
     
     // Initialize user session
     $_SESSION['customer_id'] = $user['id'];

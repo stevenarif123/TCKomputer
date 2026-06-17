@@ -7,12 +7,19 @@
 
 $pageTitle = "Dashboard";
 require_once __DIR__ . '/../includes/admin-header.php';
+require_once __DIR__ . '/../config/analytics.php';
 
-// --- Summary Stats ---
+// --- Analytics Engine: last 30 days ---
+$dashRange = normalizeDateRange(null, null); // defaults to last 30 days
+$summary   = getSalesSummary($pdo, $dashRange);
+$funnel    = getFunnelStats($pdo, $dashRange);
+$stockHealth = getStockHealth($pdo, 5);
+
+// --- Basic counts (not date-scoped) ---
 $totalProducts = (int) $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-$totalOrders = (int) $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
+$totalOrders   = (int) $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
 $pendingOrders = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE order_status = 'menunggu_konfirmasi'")->fetchColumn();
-$totalRevenue = (int) $pdo->query("SELECT COALESCE(SUM(total), 0) FROM orders WHERE order_status = 'selesai'")->fetchColumn();
+$totalRevenue  = (int)($summary['revenue'] ?? 0); // from analytics engine (last 30 days)
 
 // --- Recent Orders (last 5) ---
 $recentOrders = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5")->fetchAll();
@@ -150,22 +157,42 @@ function getDashboardOrderStatusLabel(string $status): string
 }
 ?>
 
-<div class="dashboard-stats">
-    <div class="stat-card">
-        <h3>Total Produk</h3>
-        <p class="stat-value"><?= sanitizeOutput((string) $totalProducts) ?></p>
+<div class="stats-grid">
+    <div class="stat-card-modern">
+        <div class="stat-card-icon bg-gradient-indigo">
+            <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+        <div class="stat-card-info">
+            <div class="stat-card-title">Total Produk</div>
+            <div class="stat-card-value"><?= sanitizeOutput((string) $totalProducts) ?></div>
+        </div>
     </div>
-    <div class="stat-card">
-        <h3>Total Pesanan</h3>
-        <p class="stat-value"><?= sanitizeOutput((string) $totalOrders) ?></p>
+    <div class="stat-card-modern">
+        <div class="stat-card-icon bg-gradient-cyan">
+            <span class="material-symbols-outlined">shopping_cart</span>
+        </div>
+        <div class="stat-card-info">
+            <div class="stat-card-title">Total Pesanan</div>
+            <div class="stat-card-value"><?= sanitizeOutput((string) $totalOrders) ?></div>
+        </div>
     </div>
-    <div class="stat-card">
-        <h3>Menunggu Konfirmasi</h3>
-        <p class="stat-value"><?= sanitizeOutput((string) $pendingOrders) ?></p>
+    <div class="stat-card-modern">
+        <div class="stat-card-icon bg-gradient-amber">
+            <span class="material-symbols-outlined">hourglass_empty</span>
+        </div>
+        <div class="stat-card-info">
+            <div class="stat-card-title">Menunggu Konfirmasi</div>
+            <div class="stat-card-value"><?= sanitizeOutput((string) $pendingOrders) ?></div>
+        </div>
     </div>
-    <div class="stat-card">
-        <h3>Total Pendapatan</h3>
-        <p class="stat-value" style="font-size: 1.6rem; margin-top: 6px;"><?= sanitizeOutput(formatRupiah($totalRevenue)) ?></p>
+    <div class="stat-card-modern">
+        <div class="stat-card-icon bg-gradient-emerald">
+            <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div class="stat-card-info">
+            <div class="stat-card-title">Total Pendapatan</div>
+            <div class="stat-card-value"><?= sanitizeOutput(formatRupiah($totalRevenue)) ?></div>
+        </div>
     </div>
 </div>
 

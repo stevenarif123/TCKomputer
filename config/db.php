@@ -4,6 +4,9 @@
  * Establishes and provides PDO database connection with proper error handling.
  */
 
+// Default fallback salt (NOT secure for production — set APP_VISIT_SALT in .env)
+define('APP_VISIT_SALT_FALLBACK', 'tc-komputer-visit-salt-change-me-in-env');
+
 // Set default timezone to WITA (UTC+8) for South Sulawesi
 date_default_timezone_set('Asia/Makassar');
 
@@ -73,4 +76,27 @@ function getDBConnection()
     }
 
     return $pdo;
+}
+
+/**
+ * Get the visitor privacy salt for hashing visitor identifiers.
+ * Reads APP_VISIT_SALT from the environment (loaded by getDBConnection).
+ * Falls back to an app-level constant. Returns empty string if both are unset.
+ *
+ * @return string The salt string (non-empty means visit recording is allowed)
+ */
+function getVisitSalt(): string
+{
+    // Ensure env is loaded by calling getDBConnection first if not already done
+    $salt = $_ENV['APP_VISIT_SALT'] ?? '';
+    if ($salt === '' && function_exists('getenv')) {
+        $fromEnv = getenv('APP_VISIT_SALT');
+        if ($fromEnv !== false && $fromEnv !== '') {
+            $salt = $fromEnv;
+        }
+    }
+    if ($salt === '') {
+        $salt = APP_VISIT_SALT_FALLBACK;
+    }
+    return $salt;
 }

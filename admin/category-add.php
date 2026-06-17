@@ -133,6 +133,11 @@ require_once __DIR__ . '/../includes/admin-header.php';
 </div>
 <?php endif; ?>
 
+<div class="admin-page-header">
+    <h2>Tambah Kategori Baru</h2>
+    <a href="categories" class="btn btn-secondary">&laquo; Kembali</a>
+</div>
+
 <div class="admin-form-container">
     <form action="" method="POST" enctype="multipart/form-data" class="admin-form">
         <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">

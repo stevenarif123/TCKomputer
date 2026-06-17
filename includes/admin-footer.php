@@ -16,6 +16,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Admin JavaScript -->
-    <script src="../assets/js/admin.js?v=1.2"></script>
+    <script src="../assets/js/admin.js?v=2.0"></script>
 </body>
 </html>

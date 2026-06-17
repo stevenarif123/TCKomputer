@@ -175,9 +175,16 @@ require_once __DIR__ . '/../includes/admin-header.php';
 </div>
 <?php endif; ?>
 
+<div class="admin-page-header">
+    <h2>Tambah Produk Baru</h2>
+    <a href="products" class="btn btn-secondary">&laquo; Kembali</a>
+</div>
+
 <div class="admin-form-container">
     <form action="" method="POST" enctype="multipart/form-data" class="admin-form">
         <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
+
+        <h3>Informasi Dasar</h3>
 
         <div class="form-group">
             <label for="name">Nama Produk <span class="required">*</span></label>
@@ -186,38 +193,40 @@ require_once __DIR__ . '/../includes/admin-header.php';
                    placeholder="Masukkan nama produk">
         </div>
 
-        <div class="form-group">
-            <label for="category_id">Kategori <span class="required">*</span></label>
-            <select id="category_id" name="category_id" required>
-                <option value="">-- Pilih Kategori --</option>
-                <?php foreach ($categories as $category): ?>
-                    <option value="<?= (int) $category['id'] ?>"
-                        <?= (($formData['category_id'] ?? 0) == $category['id']) ? 'selected' : '' ?>>
-                        <?= sanitizeOutput($category['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="category_id">Kategori <span class="required">*</span></label>
+                <select id="category_id" name="category_id" required>
+                    <option value="">-- Pilih Kategori --</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= (int) $category['id'] ?>"
+                            <?= (($formData['category_id'] ?? 0) == $category['id']) ? 'selected' : '' ?>>
+                            <?= sanitizeOutput($category['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="sku">SKU</label>
+                <input type="text" id="sku" name="sku" maxlength="100"
+                       value="<?= sanitizeOutput($formData['sku'] ?? '') ?>"
+                       placeholder="Kode produk (opsional)">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="sku">SKU</label>
-            <input type="text" id="sku" name="sku" maxlength="100"
-                   value="<?= sanitizeOutput($formData['sku'] ?? '') ?>"
-                   placeholder="Kode produk (opsional)">
-        </div>
-
-        <div class="form-group">
-            <label for="brand">Brand</label>
-            <input type="text" id="brand" name="brand" maxlength="100"
-                   value="<?= sanitizeOutput($formData['brand'] ?? '') ?>"
-                   placeholder="Merek produk">
-        </div>
-
-        <div class="form-group">
-            <label for="model">Model</label>
-            <input type="text" id="model" name="model" maxlength="100"
-                   value="<?= sanitizeOutput($formData['model'] ?? '') ?>"
-                   placeholder="Model produk">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="brand">Brand</label>
+                <input type="text" id="brand" name="brand" maxlength="100"
+                       value="<?= sanitizeOutput($formData['brand'] ?? '') ?>"
+                       placeholder="Merek produk">
+            </div>
+            <div class="form-group">
+                <label for="model">Model</label>
+                <input type="text" id="model" name="model" maxlength="100"
+                       value="<?= sanitizeOutput($formData['model'] ?? '') ?>"
+                       placeholder="Model produk">
+            </div>
         </div>
 
         <div class="form-group">
@@ -232,25 +241,37 @@ require_once __DIR__ . '/../includes/admin-header.php';
                       placeholder="Spesifikasi teknis produk"><?= sanitizeOutput($formData['specification'] ?? '') ?></textarea>
         </div>
 
-        <div class="form-group">
-            <label for="purchase_price">Harga Beli (Rp)</label>
-            <input type="number" id="purchase_price" name="purchase_price" min="0"
-                   value="<?= (int) ($formData['purchase_price'] ?? 0) ?>"
-                   placeholder="0">
+        <h3>Harga & Stok</h3>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="purchase_price">Harga Beli (Rp)</label>
+                <input type="number" id="purchase_price" name="purchase_price" min="0"
+                       value="<?= (int) ($formData['purchase_price'] ?? 0) ?>"
+                       placeholder="0">
+            </div>
+            <div class="form-group">
+                <label for="selling_price">Harga Jual (Rp) <span class="required">*</span></label>
+                <input type="number" id="selling_price" name="selling_price" min="1" required
+                       value="<?= (int) ($formData['selling_price'] ?? 0) ?>"
+                       placeholder="0">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="selling_price">Harga Jual (Rp) <span class="required">*</span></label>
-            <input type="number" id="selling_price" name="selling_price" min="1" required
-                   value="<?= (int) ($formData['selling_price'] ?? 0) ?>"
-                   placeholder="0">
-        </div>
-
-        <div class="form-group">
-            <label for="promo_price">Harga Promo / Flash Sale (Rp)</label>
-            <input type="number" id="promo_price" name="promo_price" min="0"
-                   value="<?= isset($formData['promo_price']) && $formData['promo_price'] !== null ? (int)$formData['promo_price'] : '' ?>"
-                   placeholder="Masukkan harga diskon jika ada">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="promo_price">Harga Promo / Flash Sale (Rp)</label>
+                <input type="number" id="promo_price" name="promo_price" min="0"
+                       value="<?= isset($formData['promo_price']) && $formData['promo_price'] !== null ? (int)$formData['promo_price'] : '' ?>"
+                       placeholder="Masukkan harga diskon jika ada">
+            </div>
+            <div class="form-group">
+                <label for="promo_stock">Stok Promo (Flash Sale)</label>
+                <input type="number" id="promo_stock" name="promo_stock" min="0"
+                       value="<?= (int) ($formData['promo_stock'] ?? 0) ?>"
+                       placeholder="Kuota barang promo">
+                <small class="form-help">Tidak boleh melebihi stok fisik.</small>
+            </div>
         </div>
 
         <div class="form-group form-checkbox">
@@ -261,66 +282,63 @@ require_once __DIR__ . '/../includes/admin-header.php';
             </label>
         </div>
 
-        <div class="form-group">
-            <label for="promo_stock">Stok Promo (Flash Sale)</label>
-            <input type="number" id="promo_stock" name="promo_stock" min="0"
-                   value="<?= (int) ($formData['promo_stock'] ?? 0) ?>"
-                   placeholder="Kuota barang promo">
-            <small class="form-help">Jumlah stok yang dialokasikan untuk Flash Sale. Tidak boleh melebihi stok fisik.</small>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="stock">Stok</label>
+                <input type="number" id="stock" name="stock" min="0"
+                       value="<?= (int) ($formData['stock'] ?? 0) ?>"
+                       placeholder="0">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="ready" <?= (($formData['status'] ?? 'ready') === 'ready') ? 'selected' : '' ?>>Ready</option>
+                    <option value="po" <?= (($formData['status'] ?? '') === 'po') ? 'selected' : '' ?>>Pre-Order (PO)</option>
+                    <option value="habis" <?= (($formData['status'] ?? '') === 'habis') ? 'selected' : '' ?>>Habis</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="stock">Stok</label>
-            <input type="number" id="stock" name="stock" min="0"
-                   value="<?= (int) ($formData['stock'] ?? 0) ?>"
-                   placeholder="0">
-        </div>
+        <h3>Detail Tambahan</h3>
 
-        <div class="form-group">
-            <label for="status">Status</label>
-            <select id="status" name="status">
-                <option value="ready" <?= (($formData['status'] ?? 'ready') === 'ready') ? 'selected' : '' ?>>Ready</option>
-                <option value="po" <?= (($formData['status'] ?? '') === 'po') ? 'selected' : '' ?>>Pre-Order (PO)</option>
-                <option value="habis" <?= (($formData['status'] ?? '') === 'habis') ? 'selected' : '' ?>>Habis</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="condition_type">Kondisi</label>
-            <select id="condition_type" name="condition_type">
-                <option value="new" <?= (($formData['condition_type'] ?? 'new') === 'new') ? 'selected' : '' ?>>Baru</option>
-                <option value="used" <?= (($formData['condition_type'] ?? '') === 'used') ? 'selected' : '' ?>>Bekas</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="warranty_note">Catatan Garansi</label>
-            <input type="text" id="warranty_note" name="warranty_note" maxlength="255"
-                   value="<?= sanitizeOutput($formData['warranty_note'] ?? '') ?>"
-                   placeholder="Contoh: Garansi 1 tahun">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="condition_type">Kondisi</label>
+                <select id="condition_type" name="condition_type">
+                    <option value="new" <?= (($formData['condition_type'] ?? 'new') === 'new') ? 'selected' : '' ?>>Baru</option>
+                    <option value="used" <?= (($formData['condition_type'] ?? '') === 'used') ? 'selected' : '' ?>>Bekas</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="warranty_note">Catatan Garansi</label>
+                <input type="text" id="warranty_note" name="warranty_note" maxlength="255"
+                       value="<?= sanitizeOutput($formData['warranty_note'] ?? '') ?>"
+                       placeholder="Contoh: Garansi 1 tahun">
+            </div>
         </div>
 
         <div class="form-group">
             <label for="image">Gambar Produk</label>
             <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
                    data-crop="true" data-aspect-ratio="1" data-width="800" data-height="800">
-            <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB. Rekomendasi ukuran: 800 x 800 piksel (rasio 1:1) dengan latar belakang putih atau transparan.</small>
+            <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB. Rekomendasi ukuran: 800 x 800 piksel (rasio 1:1).</small>
         </div>
 
-        <div class="form-group form-checkbox">
-            <label>
-                <input type="checkbox" name="is_featured" value="1"
-                    <?= (($formData['is_featured'] ?? 0) == 1) ? 'checked' : '' ?>>
-                Produk Unggulan (Featured)
-            </label>
-        </div>
-
-        <div class="form-group form-checkbox">
-            <label>
-                <input type="checkbox" name="is_active" value="1"
-                    <?= (isset($formData['is_active'])) ? (($formData['is_active'] == 1) ? 'checked' : '') : 'checked' ?>>
-                Aktif (tampilkan di toko)
-            </label>
+        <div class="form-row">
+            <div class="form-group form-checkbox">
+                <label>
+                    <input type="checkbox" name="is_featured" value="1"
+                        <?= (($formData['is_featured'] ?? 0) == 1) ? 'checked' : '' ?>>
+                    Produk Unggulan (Featured)
+                </label>
+            </div>
+            <div class="form-group form-checkbox">
+                <label>
+                    <input type="checkbox" name="is_active" value="1"
+                        <?= (isset($formData['is_active'])) ? (($formData['is_active'] == 1) ? 'checked' : '') : 'checked' ?>>
+                    Aktif (tampilkan di toko)
+                </label>
+            </div>
         </div>
 
         <div class="form-actions">

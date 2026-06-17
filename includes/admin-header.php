@@ -5,6 +5,11 @@
  * All admin pages include this file after setting $pageTitle.
  */
 
+// Security hardening — must run before session_start and before any output
+require_once __DIR__ . '/../config/security.php';
+configureSecureSession();
+applySecurityHeaders();
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../config/admin-auth.php';
@@ -31,7 +36,7 @@ $csrfToken = generateCSRFToken();
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-    <link rel="stylesheet" href="../assets/css/admin.css?v=1.2">
+    <link rel="stylesheet" href="../assets/css/admin.css?v=2.3">
     <script>
         // Inline theme checker to prevent flashing
         (function() {
@@ -84,6 +89,7 @@ $csrfToken = generateCSRFToken();
                     <li><a href="banners" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['banners.php', 'banner-add.php', 'banner-edit.php']) ? 'active' : '' ?>"><span class="material-symbols-outlined">view_carousel</span> Banner</a></li>
                     <li><a href="flash-sales" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'flash-sales.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">bolt</span> Flash Sale</a></li>
                     <li><a href="promotions" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['promotions.php', 'promotion-add.php', 'promotion-edit.php']) ? 'active' : '' ?>"><span class="material-symbols-outlined">campaign</span> Promosi</a></li>
+                    <li><a href="analytics" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'analytics.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">bar_chart</span> Analitik</a></li>
                     <li><a href="settings" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">settings</span> Pengaturan</a></li>
                     <li><a href="logout" class="nav-link nav-logout"><span class="material-symbols-outlined">logout</span> Keluar</a></li>
                 </ul>
@@ -94,7 +100,9 @@ $csrfToken = generateCSRFToken();
         <main class="admin-main">
             <!-- Top bar with mobile menu toggle -->
             <header class="admin-topbar">
-                <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">&#9776;</button>
+                <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
                 <h1 class="page-title"><?= isset($pageTitle) ? sanitizeOutput($pageTitle) : 'Admin' ?></h1>
                 <div class="topbar-actions">
                     <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Ganti Tema">

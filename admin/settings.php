@@ -291,22 +291,22 @@ require_once __DIR__ . '/../includes/admin-header.php';
         <small class="form-help">Daftar kata kunci pencarian populer. Pisahkan dengan tanda koma (contoh: RTX 4060, Ryzen 5, SSD NVMe). Kosongkan untuk menyembunyikan bagian pencarian populer.</small>
     </div>
 
-    <div style="border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; background-color: #f8fafc;">
-        <h4 style="margin-top: 0; margin-bottom: 1rem; font-weight: bold; color: #1e293b; border-b: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Banner Kampanye 1 (Kiri)</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-            <div class="form-group" style="margin-bottom: 0;">
+    <div class="settings-banner-box">
+        <h4>Banner Kampanye 1 (Kiri)</h4>
+        <div class="settings-banner-grid">
+            <div class="form-group">
                 <label for="promo_banner_1_title">Judul Banner 1</label>
                 <input type="text" id="promo_banner_1_title" name="promo_banner_1_title" value="<?= sanitizeOutput($settings['promo_banner_1_title'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_1_desc">Deskripsi Banner 1</label>
                 <input type="text" id="promo_banner_1_desc" name="promo_banner_1_desc" value="<?= sanitizeOutput($settings['promo_banner_1_desc'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_1_link">Link URL Banner 1</label>
                 <input type="text" id="promo_banner_1_link" name="promo_banner_1_link" value="<?= sanitizeOutput($settings['promo_banner_1_link'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_1_icon">Ikon Banner 1 (Material Symbol)</label>
                 <input type="text" id="promo_banner_1_icon" name="promo_banner_1_icon" value="<?= sanitizeOutput($settings['promo_banner_1_icon'] ?? '') ?>">
                 <small class="form-help">Contoh: desktop_windows, keyboard, sd_card</small>
@@ -314,22 +314,22 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </div>
     </div>
 
-    <div style="border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; background-color: #f8fafc;">
-        <h4 style="margin-top: 0; margin-bottom: 1rem; font-weight: bold; color: #1e293b; border-b: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Banner Kampanye 2 (Tengah)</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-            <div class="form-group" style="margin-bottom: 0;">
+    <div class="settings-banner-box">
+        <h4>Banner Kampanye 2 (Tengah)</h4>
+        <div class="settings-banner-grid">
+            <div class="form-group">
                 <label for="promo_banner_2_title">Judul Banner 2</label>
                 <input type="text" id="promo_banner_2_title" name="promo_banner_2_title" value="<?= sanitizeOutput($settings['promo_banner_2_title'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_2_desc">Deskripsi Banner 2</label>
                 <input type="text" id="promo_banner_2_desc" name="promo_banner_2_desc" value="<?= sanitizeOutput($settings['promo_banner_2_desc'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_2_link">Link URL Banner 2</label>
                 <input type="text" id="promo_banner_2_link" name="promo_banner_2_link" value="<?= sanitizeOutput($settings['promo_banner_2_link'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_2_icon">Ikon Banner 2 (Material Symbol)</label>
                 <input type="text" id="promo_banner_2_icon" name="promo_banner_2_icon" value="<?= sanitizeOutput($settings['promo_banner_2_icon'] ?? '') ?>">
                 <small class="form-help">Contoh: desktop_windows, keyboard, sd_card</small>
@@ -337,22 +337,22 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </div>
     </div>
 
-    <div style="border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; background-color: #f8fafc;">
-        <h4 style="margin-top: 0; margin-bottom: 1rem; font-weight: bold; color: #1e293b; border-b: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Banner Kampanye 3 (Kanan)</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-            <div class="form-group" style="margin-bottom: 0;">
+    <div class="settings-banner-box">
+        <h4>Banner Kampanye 3 (Kanan)</h4>
+        <div class="settings-banner-grid">
+            <div class="form-group">
                 <label for="promo_banner_3_title">Judul Banner 3</label>
                 <input type="text" id="promo_banner_3_title" name="promo_banner_3_title" value="<?= sanitizeOutput($settings['promo_banner_3_title'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_3_desc">Deskripsi Banner 3</label>
                 <input type="text" id="promo_banner_3_desc" name="promo_banner_3_desc" value="<?= sanitizeOutput($settings['promo_banner_3_desc'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_3_link">Link URL Banner 3</label>
                 <input type="text" id="promo_banner_3_link" name="promo_banner_3_link" value="<?= sanitizeOutput($settings['promo_banner_3_link'] ?? '') ?>">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
+            <div class="form-group">
                 <label for="promo_banner_3_icon">Ikon Banner 3 (Material Symbol)</label>
                 <input type="text" id="promo_banner_3_icon" name="promo_banner_3_icon" value="<?= sanitizeOutput($settings['promo_banner_3_icon'] ?? '') ?>">
                 <small class="form-help">Contoh: desktop_windows, keyboard, sd_card</small>
