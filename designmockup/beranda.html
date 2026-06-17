@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TECHSPEC | Solusi IT &amp; Aksesoris Komputer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            transition: transform 0.2s ease, font-variation-settings 0.2s ease;
+        }
+        
+        /* Premium custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eff4ff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #adc6ff;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0058be;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(229, 238, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-header.scrolled {
+            box-shadow: 0 4px 20px -5px rgba(19, 27, 46, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(12px) scale(1.05); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); filter: blur(40px); }
+            50% { opacity: 0.8; transform: scale(1.1); filter: blur(50px); }
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-up {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient-shift 10s ease infinite;
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Custom Hover & Interactive Cards */
+        .tech-card {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .tech-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: linear-gradient(135deg, #0058be, rgba(33, 112, 228, 0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .tech-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -10px rgba(0, 88, 190, 0.12);
+        }
+        .tech-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Active Navigation Line */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #0058be;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Heart Wishlist Animation */
+        .wishlist-btn:hover span {
+            font-variation-settings: 'FILL' 1, 'wght' 400;
+            color: #ba1a1a;
+            transform: scale(1.15);
+        }
+        .wishlist-btn.active span {
+            font-variation-settings: 'FILL' 1, 'wght' 400;
+            color: #ba1a1a;
+        }
+
+        /* Toast Message styling */
+        .toast-notification {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#7c839b",
+                        "background": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-container": "#009844",
+                        "inverse-primary": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c6c6cd",
+                        "on-secondary-fixed-variant": "#004395",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "on-background": "#0b1c30",
+                        "surface": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#2170e4",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#fefcff",
+                        "secondary": "#0058be",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary-fixed": "#002109",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565e74",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#e5eeff",
+                        "tertiary-fixed": "#6bff8f",
+                        "inverse-surface": "#213145",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-container": "#002109",
+                        "outline": "#76777d",
+                        "tertiary": "#000000"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "48px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "max-width": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "24px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "lg": "40px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-md overflow-x-hidden">
+<header class="sticky top-0 w-full z-50 glass-header scrolled">
+    <!-- Top Bar -->
+    <nav class="flex items-center justify-between px-margin-desktop h-20 max-w-max-width mx-auto" id="main-nav">
+        <div class="flex items-center gap-xl">
+            <a class="text-headline-lg font-black tracking-tighter text-secondary hover:opacity-85 transition-opacity flex items-center gap-1" href="beranda.html">
+                <span class="bg-gradient-to-r from-secondary to-secondary-container text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </a>
+            <div class="hidden lg:flex items-center gap-lg">
+                <a class="text-secondary pb-1 text-label-md font-label-md nav-link active transition-all duration-200" href="beranda.html">Beranda</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="detail_produk.html">Produk</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="beranda.html#categories">Kategori</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="status_pesanan.html">Lacak Pesanan</a>
+            </div>
+        </div>
+        <div class="flex-grow max-w-md px-lg hidden md:block">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                <input class="bg-surface-container-low border border-outline-variant/60 rounded-xl pl-10 pr-4 py-2 text-body-sm w-full focus:ring-2 focus:ring-secondary/50 focus:border-secondary focus:bg-white transition-all outline-none" placeholder="Cari hardware (e.g. Keyboard Mechanical, SSD)..." type="text"/>
+            </div>
+        </div>
+        <div class="flex items-center gap-sm">
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Notifikasi">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full animate-ping"></span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full"></span>
+            </button>
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Keranjang" onclick="window.location.href='checkout.html'">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="shopping_cart">shopping_cart</span>
+                <span class="absolute -top-0.5 -right-0.5 bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md group-hover:scale-110 transition-transform">2</span>
+            </button>
+            <div class="w-px h-6 bg-outline-variant/60 mx-xs"></div>
+            <button class="flex items-center gap-xs p-1.5 hover:bg-surface-container/50 rounded-xl transition-all">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop" class="w-7 h-7 rounded-full object-cover border border-secondary/20" alt="Avatar"/>
+                <span class="text-body-sm font-semibold text-on-surface hidden xl:block">Adrian Wijaya</span>
+            </button>
+        </div>
+    </nav>
+    <!-- Secondary Category Nav -->
+    <div class="bg-white/60 border-t border-outline-variant/40">
+        <div class="max-w-max-width mx-auto px-margin-desktop flex items-center gap-lg h-10 overflow-x-auto hide-scrollbar">
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Mouse &amp; Keyboard</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Laptop &amp; PC</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Audio &amp; Video</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Penyimpanan</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Alat Servis</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Kabel &amp; Adaptor</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Printer</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-bold text-error flex items-center gap-1" href="#"><span class="w-1.5 h-1.5 bg-error rounded-full animate-pulse"></span>Pre-Order</a>
+        </div>
+    </div>
+</header>
+
+<main class="space-y-sm py-sm animate-fade-in-up">
+    <!-- Compact Hero Section with Live Countdown & Glowing Accents -->
+    <section class="max-w-max-width mx-auto px-margin-desktop">
+        <div class="relative h-[300px] rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-primary-container to-secondary-container/90 animate-gradient">
+            <!-- Decorative blur layers -->
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-secondary rounded-full opacity-40 blur-3xl animate-pulse-glow"></div>
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-secondary-container rounded-full opacity-20 blur-3xl animate-pulse-glow" style="animation-delay: 2s;"></div>
+            
+            <div class="absolute inset-0 z-0 flex items-center justify-end">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary-container via-primary-container/85 to-transparent z-10"></div>
+                <img alt="Hero Banner" class="w-full h-full md:w-3/5 object-cover mix-blend-lighten" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxr_HNW9fY9-NnqnhEN1S3s0kGLbmCWuKATK2qhn5z76V2wuWrFl5_zUTGM9D3qwJRX0A7-l2EXm2s0z9aleio49_8JhhqYeubt1awTkgIwkOQ_3TEW8ukhUjaTYJcgpmjKeI7vUHAyPQhzKsrcLNIx9BQqj4JU8PrtTh9vJfeo1k9kkyjwWuVzDWpxWo79tBhjSRi5vgHSeYh6sKNKncwZ9I0IsfStI0nY-mRe5D8nkVpv9CtK83cX0QRs2CLFRnAPBKFuIT0Nbg"/>
+            </div>
+            
+            <div class="relative z-20 h-full flex flex-col justify-center px-10 md:px-xl text-white max-w-xl">
+                <div class="flex items-center gap-2 mb-sm">
+                    <span class="inline-block px-3 py-1 bg-error text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider animate-pulse shadow-md">LIVE DEALS</span>
+                    <span class="text-body-sm font-semibold text-white/90" id="hero-countdown-label">Promo Berakhir: <span id="hero-timer" class="font-mono text-secondary-fixed bg-white/10 px-2 py-0.5 rounded">05:12:44</span></span>
+                </div>
+                <h1 class="text-headline-lg md:text-[38px] leading-tight font-black mb-xs">Upgrade Workspace Profesional Anda</h1>
+                <p class="text-body-md text-white/80 max-w-md mb-md">Dapatkan koleksi aksesoris IT premium terbaik dengan cicilan 0% dan garansi resmi distributor.</p>
+                <div class="flex flex-wrap gap-sm">
+                    <button onclick="window.location.href='detail_produk.html'" class="px-md py-3 bg-white text-secondary font-bold text-label-md rounded-xl hover:bg-surface-dim hover:scale-105 active:scale-95 transition-all shadow-md">
+                        Belanja Sekarang
+                    </button>
+                    <button class="px-md py-3 bg-white/10 hover:bg-white/20 text-white border border-white/25 font-bold text-label-md rounded-xl hover:scale-105 active:scale-95 transition-all">
+                        Pelajari Selengkapnya
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section with Interactive Glowing Hover Effects -->
+    <section id="categories" class="max-w-max-width mx-auto px-margin-desktop py-sm">
+        <div class="bg-white rounded-2xl p-md border border-outline-variant/40 shadow-sm">
+            <h2 class="font-headline-md text-on-background font-extrabold mb-md">Kategori Pilihan</h2>
+            <div class="grid grid-cols-5 md:grid-cols-10 gap-sm">
+                <!-- Category Item -->
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">computer</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Komputer</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">laptop_mac</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Laptop</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">smartphone</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Smartphone</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">keyboard</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Keyboard</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">mouse</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Mouse</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">sd_storage</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Penyimpanan</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">headset</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Audio</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">print</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Printer</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">cable</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Kabel</span>
+                </a>
+                <a class="flex flex-col items-center gap-2 group transition-all duration-300 hover:-translate-y-1" href="#">
+                    <div class="w-12 h-12 bg-surface-container flex items-center justify-center rounded-xl group-hover:bg-secondary group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(0,88,190,0.6)] transition-all duration-300">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-white">build</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300">Lainnya</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Flash Sale Section with Ticking JS Countdown and Savings Ribbons -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-sm">
+        <div class="bg-gradient-to-r from-error to-orange-500 rounded-2xl p-md flex flex-col md:flex-row gap-md items-center shadow-lg relative overflow-hidden">
+            <!-- Wave effect in bg -->
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+            
+            <div class="text-white min-w-[220px] relative z-10">
+                <div class="flex items-center gap-1.5 mb-1">
+                    <span class="w-2.5 h-2.5 bg-white rounded-full animate-ping"></span>
+                    <h3 class="text-headline-md font-black tracking-tight">Flash Sale</h3>
+                </div>
+                <p class="text-body-sm text-white/85 mb-md">Berakhir dalam:</p>
+                <!-- Live Ticking Countdown Box -->
+                <div class="flex gap-2 text-primary">
+                    <div class="w-10 h-10 bg-white rounded-lg flex flex-col items-center justify-center font-extrabold text-lg shadow" id="fs-hours">01</div>
+                    <div class="w-10 h-10 bg-white rounded-lg flex flex-col items-center justify-center font-extrabold text-lg shadow" id="fs-minutes">32</div>
+                    <div class="w-10 h-10 bg-white rounded-lg flex flex-col items-center justify-center font-extrabold text-lg shadow animate-pulse" id="fs-seconds">45</div>
+                </div>
+            </div>
+            <div class="flex-grow flex gap-sm overflow-x-auto hide-scrollbar w-full relative z-10 py-1">
+                <!-- Flash Sale Product 1 -->
+                <div onclick="window.location.href='detail_produk.html'" class="min-w-[170px] bg-white rounded-xl p-2.5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer relative group">
+                    <div class="absolute top-2 left-2 bg-error text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">HEMAT 30%</div>
+                    <img alt="Flash Sale 1" class="w-full aspect-square object-cover rounded-lg mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQI9zKerPi5R7OlhdkrZwFYeDW4r9prC2zTb2-z6uCpBYpt78fYt9DLNej5aS0fVVTe2esyn0DS1pjmrKNH3R76io4ryRpk3iDJllBuu_278wGOnuyA1NFTsTYciiKfjEqQsgWpQualQqsCT7Fs5v8rQ_M_VgL1hPKf7BUb_RzAycItbSz5gpPl-ntA9-c4oqWVit0LeMmxuf02coHtO_vdtYAFkRnOIPfLTAZbrUegOWFovGuwk7TyuYbOcBElzy5-XgYmrSGydM"/>
+                    <p class="text-[11px] text-on-surface-variant line-through">Rp 850.000</p>
+                    <p class="text-error font-black text-body-md">Rp 599.000</p>
+                    <!-- Progress bar -->
+                    <div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-error to-orange-500 h-full rounded-full animate-pulse" style="width: 78%;"></div>
+                    </div>
+                    <p class="text-[10px] font-bold text-on-surface-variant mt-1.5 flex justify-between">
+                        <span>Segera Habis</span>
+                        <span class="text-error">78%</span>
+                    </p>
+                </div>
+                <!-- Flash Sale Product 2 -->
+                <div onclick="window.location.href='detail_produk.html'" class="min-w-[170px] bg-white rounded-xl p-2.5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer relative group">
+                    <div class="absolute top-2 left-2 bg-error text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">HEMAT 29%</div>
+                    <img alt="Flash Sale 2" class="w-full aspect-square object-cover rounded-lg mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAca4Z4VECgdY0JO4WPhiDiAUihFtaq1t0IV_wbG-LupO8p68WwN6HpPSSRlCifAADqTgCeL2pogAImwf7ZfBqXkKVU543CY0FIPDjFHcCU1sPntd4HLKxn-YzVvi_xee-9eJwW5ME5JdD0c-DzDiy9wJ42gc9862AOi17se_unRKiey7PuTFt3znT-MxkDZyhmdf8-lLYkz8VyPFjHqoh9fwB3Q1b3GR7tno2jynf4KXQFCZgnZRh6AMnPqNO_mrHA3hP-_68M66o"/>
+                    <p class="text-[11px] text-on-surface-variant line-through">Rp 1.200.000</p>
+                    <p class="text-error font-black text-body-md">Rp 845.000</p>
+                    <div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-error to-orange-500 h-full rounded-full" style="width: 42%;"></div>
+                    </div>
+                    <p class="text-[10px] font-bold text-on-surface-variant mt-1.5 flex justify-between">
+                        <span>Tersisa 12 unit</span>
+                        <span class="text-orange-500">42%</span>
+                    </p>
+                </div>
+                <!-- Flash Sale Product 3 -->
+                <div onclick="window.location.href='detail_produk.html'" class="min-w-[170px] bg-white rounded-xl p-2.5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer relative group">
+                    <div class="absolute top-2 left-2 bg-error text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">HEMAT 39%</div>
+                    <img alt="Flash Sale 3" class="w-full aspect-square object-cover rounded-lg mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDjDx5Fx_JQeivCIK-9k_jzZx_PTIo2YVSM2SBwKFuj9uu76sof64Gt0WH_6QeMrxhEKugNtbvD4RKvXZZcoFwYX_PgUgfZk190yd_rYNJHiQ8DCBij3zqhcRqLveegrtFv9gYmqYfevrillOhMtFTKUZ5p2fUQ5zblyQSdVSdOd6UUqnU8BOgdUYh--Sp0F8bIIYhh5eUAQIWVe1XrLBvP58jj23BdmBwaZDrIVI2IeknPdT6zObK2_d37kwEdNXIPD8UBWnTKLQ"/>
+                    <p class="text-[11px] text-on-surface-variant line-through">Rp 1.850.000</p>
+                    <p class="text-error font-black text-body-md">Rp 1.120.000</p>
+                    <div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-error to-orange-500 h-full rounded-full" style="width: 15%;"></div>
+                    </div>
+                    <p class="text-[10px] font-bold text-on-surface-variant mt-1.5 flex justify-between">
+                        <span>Hampir Habis!</span>
+                        <span class="text-error font-black">15%</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Product Grid: Priority Information-Dense Cards -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-md">
+        <div class="flex items-center justify-between mb-lg">
+            <div>
+                <h2 class="text-headline-md font-extrabold text-on-background">Rekomendasi Untukmu</h2>
+                <p class="text-body-sm text-on-surface-variant">Koleksi aksesoris dan hardware terpopuler dengan ulasan bintang lima</p>
+            </div>
+            <button class="text-secondary font-bold text-sm hover:text-secondary-container flex items-center gap-1 group">
+                Lihat Semua 
+                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-sm">
+            <!-- Product Card 1 -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQI9zKerPi5R7OlhdkrZwFYeDW4r9prC2zTb2-z6uCpBYpt78fYt9DLNej5aS0fVVTe2esyn0DS1pjmrKNH3R76io4ryRpk3iDJllBuu_278wGOnuyA1NFTsTYciiKfjEqQsgWpQualQqsCT7Fs5v8rQ_M_VgL1hPKf7BUb_RzAycItbSz5gpPl-ntA9-c4oqWVit0LeMmxuf02coHtO_vdtYAFkRnOIPfLTAZbrUegOWFovGuwk7TyuYbOcBElzy5-XgYmrSGydM"/>
+                    <div class="absolute top-2 left-2 bg-secondary text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">DISKON 20%</div>
+                    <!-- Wishlist button (Interactive heart) -->
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">Mechanical Keyboard K8 RGB Backlit Wireless</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 850.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">4.9 <span class="text-outline/70 font-normal">| Terjual 100+</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('Mechanical Keyboard K8')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 2 -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAca4Z4VECgdY0JO4WPhiDiAUihFtaq1t0IV_wbG-LupO8p68WwN6HpPSSRlCifAADqTgCeL2pogAImwf7ZfBqXkKVU543CY0FIPDjFHcCU1sPntd4HLKxn-YzVvi_xee-9eJwW5ME5JdD0c-DzDiy9wJ42gc9862AOi17se_unRKiey7PuTFt3znT-MxkDZyhmdf8-lLYkz8VyPFjHqoh9fwB3Q1b3GR7tno2jynf4KXQFCZgnZRh6AMnPqNO_mrHA3hP-_68M66o"/>
+                    <div class="absolute top-2 left-2 bg-on-tertiary-container text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">TERLARIS</div>
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">Pro Precision Gaming Mouse Wireless DPI 16000</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 1.200.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">5.0 <span class="text-outline/70 font-normal">| Terjual 50+</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('Pro Precision Gaming Mouse')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 3 -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDjDx5Fx_JQeivCIK-9k_jzZx_PTIo2YVSM2SBwKFuj9uu76sof64Gt0WH_6QeMrxhEKugNtbvD4RKvXZZcoFwYX_PgUgfZk190yd_rYNJHiQ8DCBij3zqhcRqLveegrtFv9gYmqYfevrillOhMtFTKUZ5p2fUQ5zblyQSdVSdOd6UUqnU8BOgdUYh--Sp0F8bIIYhh5eUAQIWVe1XrLBvP58jj23BdmBwaZDrIVI2IeknPdT6zObK2_d37kwEdNXIPD8UBWnTKLQ"/>
+                    <div class="absolute top-2 left-2 bg-on-tertiary-fixed-variant text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">PRE-ORDER</div>
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">External SSD HyperDrive 1TB High Speed USB-C</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 1.850.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">4.8 <span class="text-outline/70 font-normal">| Terjual 200+</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('External SSD HyperDrive 1TB')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 4 -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 4" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYqjr5pVbRJoalfR5BAGMu_yg1R3sY7ZP6e30RnI44RdtnJcw-vfElvX8GTU0XlcFE7_IjTR5YUUlvQDFLYjx2CcO2WeHwrkm54o3t7T1Tb9AUiZU73Nc-5-5LImGfqf8fr9J_GGT1KekLkiY7Ox2L4SUIAwtF_4NpOdEsU6jtJ9r9NVCQKHLUFwShEF70RBCZpIyThuU63sCPQjsblMtvUpj1qkhSADQ3JXykbvoT1Ac32IUkuRkMFuHtC9qbDBChE6x_NLwitkU"/>
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">Studio ANC Headset Premium Noise Cancelling</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 2.400.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">4.9 <span class="text-outline/70 font-normal">| Terjual 30</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('Studio ANC Headset')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 5 -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 5" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxr_HNW9fY9-NnqnhEN1S3s0kGLbmCWuKATK2qhn5z76V2wuWrFl5_zUTGM9D3qwJRX0A7-l2EXm2s0z9aleio49_8JhhqYeubt1awTkgIwkOQ_3TEW8ukhUjaTYJcgpmjKeI7vUHAyPQhzKsrcLNIx9BQqj4JU8PrtTh9vJfeo1k9kkyjwWuVzDWpxWo79tBhjSRi5vgHSeYh6sKNKncwZ9I0IsfStI0nY-mRe5D8nkVpv9CtK83cX0QRs2CLFRnAPBKFuIT0Nbg"/>
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">Ultra Slim 4K Portable Monitor for Laptop</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 3.100.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">4.7 <span class="text-outline/70 font-normal">| Terjual 15</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('Ultra Slim 4K Monitor')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 6 (Replaced standard placeholder with graphics card) -->
+            <div class="group bg-white rounded-2xl border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
+                <div class="relative aspect-square overflow-hidden bg-surface-container-low">
+                    <img alt="Product 6" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASaWKvwFCs3TaJ9vC3-CgHH5w5A_xey6svufC6gAeU5hU92cNbjfthcGacqColD4HtE733T4bTpg07co2X2VqiX_FQhCXMGCZsreJgIet9x1wk1lZw7x0IU5lNPrCB4okQLv4fXls6LvVpVHh4vBz4YaAYqANHC7Q2Cr8CMURSzGnDUBulULsq3tqH7WZsWaJ3UspzMtgudzlHf44AS81cVITuN_X4O3nUSMkkyO23ylkPYxyA-6coEUXS7pkV6XmXA6YTIL-djxI"/>
+                    <div class="absolute top-2 left-2 bg-on-tertiary-container text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">NEW</div>
+                    <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm wishlist-btn transition-colors hover:bg-white" onclick="event.stopPropagation(); toggleWishlist(this);">
+                        <span class="material-symbols-outlined text-sm text-on-surface-variant">favorite</span>
+                    </button>
+                </div>
+                <div class="p-3 flex flex-col flex-grow">
+                    <h3 class="text-body-sm font-semibold text-on-background line-clamp-2 min-h-[40px] mb-1 group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='detail_produk.html'">Professional IT Repair Toolkit 45-in-1 Precision</h3>
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <p class="text-body-md font-bold text-on-background">Rp 425.000</p>
+                    </div>
+                    <div class="flex items-center gap-1 mb-2">
+                        <span class="material-symbols-outlined text-[14px] text-orange-500 fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="text-[11px] font-semibold text-on-surface-variant">4.9 <span class="text-outline/70 font-normal">| Terjual 400+</span></span>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2">
+                        <div class="flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[13px] text-on-surface-variant">location_on</span>
+                            <span class="text-[10px] text-on-surface-variant font-medium">Jakarta Pusat</span>
+                        </div>
+                        <button onclick="addToCart('Professional IT Toolkit')" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white hover:shadow-md transition-all active:scale-95" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-xl flex justify-center">
+            <button class="px-xl py-3 border border-outline-variant hover:border-secondary text-on-surface font-bold text-label-md rounded-xl hover:bg-white transition-all shadow-sm flex items-center gap-1 hover:scale-105 active:scale-95">
+                Muat Lebih Banyak
+            </button>
+        </div>
+    </section>
+
+    <!-- Why Us Section (Trust Features) with Animated Icons -->
+    <section class="bg-white py-lg border-y border-outline-variant/40 shadow-sm relative overflow-hidden">
+        <div class="max-w-max-width mx-auto px-margin-desktop grid grid-cols-2 lg:grid-cols-4 gap-md">
+            <div class="flex items-center gap-sm group">
+                <div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300">
+                    <span class="material-symbols-outlined text-[26px]">local_shipping</span>
+                </div>
+                <div>
+                    <h4 class="text-[13px] font-extrabold text-on-background">Bebas Ongkir</h4>
+                    <p class="text-[11px] text-on-surface-variant font-medium">Syarat &amp; Ketentuan berlaku</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-sm group">
+                <div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300">
+                    <span class="material-symbols-outlined text-[26px]">security</span>
+                </div>
+                <div>
+                    <h4 class="text-[13px] font-extrabold text-on-background">Garansi Resmi</h4>
+                    <p class="text-[11px] text-on-surface-variant font-medium">100% Produk Original</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-sm group">
+                <div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300">
+                    <span class="material-symbols-outlined text-[26px]">payments</span>
+                </div>
+                <div>
+                    <h4 class="text-[13px] font-extrabold text-on-background">Cicilan 0%</h4>
+                    <p class="text-[11px] text-on-surface-variant font-medium">Hingga 12 bulan</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-sm group">
+                <div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300">
+                    <span class="material-symbols-outlined text-[26px]">headset_mic</span>
+                </div>
+                <div>
+                    <h4 class="text-[13px] font-extrabold text-on-background">CS 24 Jam</h4>
+                    <p class="text-[11px] text-on-surface-variant font-medium">Siap membantu Anda</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter with Animated Glow & Floating particle background -->
+    <section class="max-w-max-width mx-auto px-margin-desktop py-xl">
+        <div class="bg-gradient-to-r from-primary-container to-secondary-container rounded-3xl p-10 text-white relative overflow-hidden shadow-xl">
+            <!-- Glow background orb -->
+            <div class="absolute -right-24 -bottom-24 w-80 h-80 bg-secondary rounded-full opacity-20 blur-3xl animate-pulse-glow"></div>
+            
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-xl items-center">
+                <div>
+                    <h2 class="text-headline-md md:text-3xl font-black mb-xs tracking-tight">Hemat Sampai Rp 500.000 untuk Pesanan Pertama</h2>
+                    <p class="text-body-sm text-white/70 mb-md leading-relaxed">Dapatkan voucher eksklusif dan update hardware terbaru langsung ke email Anda.</p>
+                    <form class="flex flex-col sm:flex-row gap-2" onsubmit="handleSubscribe(event)">
+                        <input id="newsletter-email" required class="flex-grow bg-white/10 border-white/20 rounded-xl px-4 py-3 text-body-sm text-white focus:ring-2 focus:ring-white/50 focus:border-white focus:bg-white/20 placeholder:text-white/40 outline-none transition-all" placeholder="Masukkan email Anda" type="email"/>
+                        <button type="submit" class="bg-secondary px-lg py-3 rounded-xl font-bold text-label-md hover:bg-secondary/90 transition-all shadow-md active:scale-95">Langganan</button>
+                    </form>
+                </div>
+                <div class="grid grid-cols-2 gap-sm">
+                    <div class="bg-white/5 backdrop-blur-md p-5 rounded-2xl text-center border border-white/5 hover:border-white/10 transition-colors">
+                        <p class="text-headline-md font-black text-secondary-fixed">5.000+</p>
+                        <p class="text-[11px] text-white/60 font-bold uppercase tracking-wider mt-1">Produk Terjual</p>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-md p-5 rounded-2xl text-center border border-white/5 hover:border-white/10 transition-colors">
+                        <p class="text-headline-md font-black text-secondary-fixed">99%</p>
+                        <p class="text-[11px] text-white/60 font-bold uppercase tracking-wider mt-1">Kepuasan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="w-full py-xl px-margin-desktop bg-primary-container border-t border-outline-variant/10 text-white mt-lg relative overflow-hidden">
+    <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+    <div class="max-w-max-width mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl relative z-10">
+        <div class="col-span-1 space-y-md">
+            <h2 class="text-headline-md font-black text-white tracking-tighter flex items-center gap-1">
+                <span class="bg-secondary text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </h2>
+            <p class="text-body-sm text-on-primary-container pr-md leading-relaxed">
+                Marketplace hardware dan aksesoris IT terlengkap dengan harga transparan, produk bergaransi resmi, dan pengiriman cepat ke seluruh Indonesia.
+            </p>
+            <p class="text-[12px] text-on-primary-container leading-relaxed">
+                <span class="font-bold text-white block mb-1">Kantor Pusat:</span>
+                Techspec Jakarta HQ<br/>Lantai 5, Jakarta Selatan
+            </p>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Jelajahi</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Beranda</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="detail_produk.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Produk</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html#categories"><span class="w-1 h-1 bg-secondary rounded-full"></span>Kategori</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="#"><span class="w-1 h-1 bg-secondary rounded-full"></span>Brand Resmi</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Bantuan &amp; Layanan</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Pusat Bantuan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="checkout.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Keranjang</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="status_pesanan.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Lacak Pesanan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Kebijakan Privasi</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Syarat &amp; Ketentuan</a></li>
+            </ul>
+        </div>
+        <div class="space-y-md">
+            <h4 class="text-white font-bold text-label-md uppercase tracking-wider">Langganan Newsletter</h4>
+            <p class="text-body-sm text-on-primary-container leading-relaxed">Dapatkan voucher eksklusif dan update hardware terbaru langsung ke email Anda.</p>
+            <form class="flex gap-xs" onsubmit="handleSubscribe(event)">
+                <input class="bg-white/10 text-body-sm text-white placeholder:text-white/40 border-none rounded-lg px-sm py-2 w-full focus:ring-2 focus:ring-secondary focus:bg-white/20 outline-none" placeholder="Email Anda" type="email"/>
+                <button type="submit" class="bg-secondary text-white px-sm py-2 rounded-lg material-symbols-outlined hover:bg-secondary/90 transition-all shadow-md">send</button>
+            </form>
+            <div class="pt-2">
+                <h5 class="text-white font-bold mb-2 text-label-sm uppercase tracking-wider">Ikuti Kami</h5>
+                <div class="flex gap-sm">
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">share</span>
+                    </a>
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">alternate_email</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-max-width mx-auto pt-lg border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-sm relative z-10">
+        <p class="text-[12px] text-on-primary-container">© 2024 TECHSPEC IT Solutions. Semua hak dilindungi.</p>
+        <div class="flex gap-md">
+            <img alt="Secure Payment" class="h-6 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjKkM3XwLYkuyyy3GA76lpZE08CgjSdzU1euAukXRdAWD753apsGygYuX4Su-f2P9dorBFBTYsvsEUk1LY1hmwrX93wXoKinJefOhbTJEyKLdWuLy_MOOrwpcHLbAk2hYQGddh8_8MiZzry5sCIXZDqWIiS6mnAO5xCGDVyYEcSAx-IDy8fPtmNdpby2jDTRrTvn0oQVOAWm-BbLmK2Bb9JfkKFHqwZwI-4azOvyIuwcRNEz1EzCmxWbOrS_AV-4R3Y1iLGEZpLW8"/>
+        </div>
+    </div>
+</footer>
+
+<!-- Toast Notifications UI -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 bg-primary-container text-white px-5 py-3 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 toast-notification">
+    <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-md">done</span>
+    </div>
+    <div>
+        <p class="text-body-sm font-bold text-white" id="toast-title">Berhasil ditambahkan!</p>
+        <p class="text-[11px] text-white/60" id="toast-msg">Barang masuk keranjang belanja.</p>
+    </div>
+</div>
+
+<script>
+    // Smooth navbar shadow on scroll
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Simple interaction for buttons
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.classList.add('scale-[0.98]'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('scale-[0.98]'));
+        btn.addEventListener('mouseleave', () => btn.classList.remove('scale-[0.98]'));
+    });
+
+    // Wishlist Toggle Interaction
+    function toggleWishlist(element) {
+        element.classList.toggle('active');
+        const isActive = element.classList.contains('active');
+        const heartSymbol = element.querySelector('span');
+        if (isActive) {
+            heartSymbol.style.fontVariationSettings = "'FILL' 1, 'wght' 400";
+            showToast("Favorit", "Produk ditambahkan ke wishlist Anda.");
+        } else {
+            heartSymbol.style.fontVariationSettings = "'FILL' 0, 'wght' 400";
+            showToast("Favorit", "Produk dihapus dari wishlist Anda.");
+        }
+    }
+
+    // Add To Cart Mock Action
+    function addToCart(productName) {
+        showToast("Keranjang Belanja", `${productName} ditambahkan ke keranjang.`);
+    }
+
+    // Toast Manager
+    let toastTimeout;
+    function showToast(title, message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-msg').textContent = message;
+        
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Newsletter Subscribe Mock Action
+    function handleSubscribe(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input').value;
+        showToast("Terima Kasih!", `Pendaftaran untuk ${email} berhasil.`);
+        event.target.reset();
+    }
+
+    // Countdown Timer logic for Hero & Flash Sale
+    function startCountdowns() {
+        // Hero countdown (e.g. 5 hours 12 minutes 44 seconds)
+        let heroSeconds = 5 * 3600 + 12 * 60 + 44;
+        
+        // Flash sale countdown (e.g. 1 hour 32 minutes 45 seconds)
+        let fsSeconds = 1 * 3600 + 32 * 60 + 45;
+
+        function formatTime(totalSeconds) {
+            let h = Math.floor(totalSeconds / 3600);
+            let m = Math.floor((totalSeconds % 3600) / 60);
+            let s = totalSeconds % 60;
+            return {
+                hours: String(h).padStart(2, '0'),
+                minutes: String(m).padStart(2, '0'),
+                seconds: String(s).padStart(2, '0')
+            };
+        }
+
+        setInterval(() => {
+            if (heroSeconds > 0) {
+                heroSeconds--;
+                const formatted = formatTime(heroSeconds);
+                document.getElementById('hero-timer').textContent = `${formatted.hours}:${formatted.minutes}:${formatted.seconds}`;
+            }
+
+            if (fsSeconds > 0) {
+                fsSeconds--;
+                const formatted = formatTime(fsSeconds);
+                document.getElementById('fs-hours').textContent = formatted.hours;
+                document.getElementById('fs-minutes').textContent = formatted.minutes;
+                document.getElementById('fs-seconds').textContent = formatted.seconds;
+            }
+        }, 1000);
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+        startCountdowns();
+    });
+</script>
+</body>
+</html>

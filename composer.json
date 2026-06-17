@@ -1,0 +1,13 @@
+{
+    "name": "steven-it-shop/tckomputer",
+    "description": "Steven IT Shop - E-commerce for computer products",
+    "type": "project",
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload": {
+        "files": [
+            "config/helpers.php"
+        ]
+    }
+}

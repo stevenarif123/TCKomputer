@@ -1,0 +1,30 @@
+# Disable directory listing
+Options -Indexes
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Block direct access to config and includes directories
+RewriteRule ^config/ - [F,L]
+RewriteRule ^includes/ - [F,L]
+
+# Block access to database backups, settings, composer files, test results, and logs
+<FilesMatch "^\.|\.(sql|json|xml|md|cache|result|log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 1. Redirect external requests for .php files to their clean URL counterpart (excluding POST requests)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteRule ^ /%1 [R=301,L]
+
+# 2. Internally rewrite clean URLs to PHP files if they exist
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]

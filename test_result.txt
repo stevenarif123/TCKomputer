@@ -1,0 +1,10 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.16
+Configuration: D:\laragon\www\TCKomputer\phpunit.xml
+
+.......                                                             7 / 7 (100%)
+
+Time: 02:41.311, Memory: 26.00 MB
+
+OK (7 tests, 1675 assertions)

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Logitech MX Master 3S - TECHSPEC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            transition: transform 0.2s ease, font-variation-settings 0.2s ease;
+        }
+        
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eff4ff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #adc6ff;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0058be;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(229, 238, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-header.scrolled {
+            box-shadow: 0 4px 20px -5px rgba(19, 27, 46, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Gallery hover zoom */
+        .zoom-container {
+            overflow: hidden;
+            position: relative;
+            cursor: zoom-in;
+        }
+        .zoom-image {
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+        }
+
+        /* Animations & Keyframes */
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes tab-fade {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2s infinite ease-in-out;
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: tab-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Active Navigation Line */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #0058be;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Active tabs line for specs section */
+        .spec-tab {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .spec-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #0058be;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .spec-tab.active-tab::after {
+            width: 100%;
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Lightbox modal animation */
+        #lightbox-modal {
+            transition: opacity 0.35s ease;
+        }
+        #lightbox-modal.hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        /* Card lifts */
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -10px rgba(11, 28, 48, 0.08);
+        }
+
+        .toast-notification {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#7c839b",
+                        "background": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-container": "#009844",
+                        "inverse-primary": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c6c6cd",
+                        "on-secondary-fixed-variant": "#004395",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "on-background": "#0b1c30",
+                        "surface": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#2170e4",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#fefcff",
+                        "secondary": "#0058be",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary-fixed": "#002109",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565e74",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#e5eeff",
+                        "tertiary-fixed": "#6bff8f",
+                        "inverse-surface": "#213145",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-container": "#002109",
+                        "outline": "#76777d",
+                        "tertiary": "#000000"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "48px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "max-width": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "24px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "lg": "40px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-md overflow-x-hidden">
+<header class="sticky top-0 w-full z-50 glass-header scrolled">
+    <!-- Top Bar -->
+    <nav class="flex items-center justify-between px-margin-desktop h-20 max-w-max-width mx-auto" id="main-nav">
+        <div class="flex items-center gap-xl">
+            <a class="text-headline-lg font-black tracking-tighter text-secondary hover:opacity-85 transition-opacity flex items-center gap-1" href="beranda.html">
+                <span class="bg-gradient-to-r from-secondary to-secondary-container text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </a>
+            <div class="hidden lg:flex items-center gap-lg">
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="beranda.html">Beranda</a>
+                <a class="text-secondary pb-1 text-label-md font-label-md nav-link active transition-all duration-200" href="detail_produk.html">Produk</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="beranda.html#categories">Kategori</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="status_pesanan.html">Lacak Pesanan</a>
+            </div>
+        </div>
+        <div class="flex-grow max-w-md px-lg hidden md:block">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                <input class="bg-surface-container-low border border-outline-variant/60 rounded-xl pl-10 pr-4 py-2 text-body-sm w-full focus:ring-2 focus:ring-secondary/50 focus:border-secondary focus:bg-white transition-all outline-none" placeholder="Cari hardware (e.g. Keyboard Mechanical, SSD)..." type="text"/>
+            </div>
+        </div>
+        <div class="flex items-center gap-sm">
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Notifikasi">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full animate-ping"></span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full"></span>
+            </button>
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Keranjang" onclick="window.location.href='checkout.html'">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="shopping_cart">shopping_cart</span>
+                <span class="absolute -top-0.5 -right-0.5 bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md group-hover:scale-110 transition-transform">2</span>
+            </button>
+            <div class="w-px h-6 bg-outline-variant/60 mx-xs"></div>
+            <button class="flex items-center gap-xs p-1.5 hover:bg-surface-container/50 rounded-xl transition-all">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop" class="w-7 h-7 rounded-full object-cover border border-secondary/20" alt="Avatar"/>
+                <span class="text-body-sm font-semibold text-on-surface hidden xl:block">Adrian Wijaya</span>
+            </button>
+        </div>
+    </nav>
+    <!-- Secondary Category Nav -->
+    <div class="bg-white/60 border-t border-outline-variant/40">
+        <div class="max-w-max-width mx-auto px-margin-desktop flex items-center gap-lg h-10 overflow-x-auto hide-scrollbar">
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Mouse &amp; Keyboard</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Laptop &amp; PC</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Audio &amp; Video</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Penyimpanan</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Alat Servis</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Kabel &amp; Adaptor</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Printer</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-bold text-error flex items-center gap-1" href="#"><span class="w-1.5 h-1.5 bg-error rounded-full animate-pulse"></span>Pre-Order</a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-lg animate-fade-in-up">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-xs text-body-sm text-on-surface-variant mb-lg">
+        <a class="hover:text-secondary transition-colors" href="beranda.html">Beranda</a>
+        <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+        <a class="hover:text-secondary transition-colors" href="#">Peripherals</a>
+        <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+        <a class="hover:text-secondary transition-colors" href="#">Mouse</a>
+        <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+        <span class="text-on-surface font-semibold">Logitech MX Master 3S</span>
+    </nav>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-xl">
+        <!-- Left Column: Gallery with zoom & modal lightbox -->
+        <section class="space-y-sm">
+            <div onclick="openLightbox()" class="zoom-container aspect-square bg-white rounded-2xl border border-outline-variant/60 overflow-hidden flex items-center justify-center p-8 relative group shadow-sm">
+                <!-- Hover Lens Indicator overlay -->
+                <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-center justify-center">
+                    <span class="bg-white/95 text-secondary p-3 rounded-full shadow-lg scale-90 group-hover:scale-100 transition-transform duration-300 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-xl">zoom_in</span>
+                    </span>
+                </div>
+                <img id="main-product-image" alt="Product Image" class="zoom-image w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS7kI4mDYhPU85yojpDvI7oYxZylscF6MlR1PMI7sqs3N9oyy2nj4ra3mMH4RT7mbltAKnwCecfVFovmZhWLDTazqeDtWMOYEEa9s31WupchGuJxIHQlMOyBm_Wo81LGLR05YYTW06GRDkI3b4arjFcCMsTgn5baGn6gDUk3hvGVD3uNlPaj3xSCcTBmjv9FbiKxh16ct8-_WgaUWfrI29XoI-RtzqzIoJrT-GY-5L8L01Y3MVAa3xwsVPrHO2dUxRQWxhKeReZsI"/>
+            </div>
+            
+            <!-- Gallery Thumbnails -->
+            <div class="grid grid-cols-4 gap-sm">
+                <button onclick="setProductImage(this, 'https://lh3.googleusercontent.com/aida-public/AB6AXuAS7kI4mDYhPU85yojpDvI7oYxZylscF6MlR1PMI7sqs3N9oyy2nj4ra3mMH4RT7mbltAKnwCecfVFovmZhWLDTazqeDtWMOYEEa9s31WupchGuJxIHQlMOyBm_Wo81LGLR05YYTW06GRDkI3b4arjFcCMsTgn5baGn6gDUk3hvGVD3uNlPaj3xSCcTBmjv9FbiKxh16ct8-_WgaUWfrI29XoI-RtzqzIoJrT-GY-5L8L01Y3MVAa3xwsVPrHO2dUxRQWxhKeReZsI')" class="gallery-thumb aspect-square bg-white rounded-xl border-2 border-secondary overflow-hidden p-2 transition-all">
+                    <img alt="Thumb 1" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS7kI4mDYhPU85yojpDvI7oYxZylscF6MlR1PMI7sqs3N9oyy2nj4ra3mMH4RT7mbltAKnwCecfVFovmZhWLDTazqeDtWMOYEEa9s31WupchGuJxIHQlMOyBm_Wo81LGLR05YYTW06GRDkI3b4arjFcCMsTgn5baGn6gDUk3hvGVD3uNlPaj3xSCcTBmjv9FbiKxh16ct8-_WgaUWfrI29XoI-RtzqzIoJrT-GY-5L8L01Y3MVAa3xwsVPrHO2dUxRQWxhKeReZsI"/>
+                </button>
+                <button onclick="setProductImage(this, 'https://lh3.googleusercontent.com/aida-public/AB6AXuBK3YOTsADWOdQ-szjZ6Em_YLWGZB2MGa5hvtU4HJbtZlNjEfGodvTzXr9ijQBmox-CHJ3ifNkOxsOrpYfPM6cA0mpm1V3dH4o-84DMwHSLL0F5LtKfDpqLT2ie6mNmU1C3T6hW8oJ69NSAlnTwF2awHgGsj6Ns-kLV6sw-7T5eKhvlIfODKugACAyysmi21rplXS7djvcPo_Ni6UKRRmb_E0VUydNpKnaE2PgTz3R4Tcs4C9BHrcg5av86tyWmcG1d9K7T_tqUwuI')" class="gallery-thumb aspect-square bg-white rounded-xl border border-outline-variant/60 hover:border-secondary transition-all overflow-hidden p-2">
+                    <img alt="Thumb 2" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK3YOTsADWOdQ-szjZ6Em_YLWGZB2MGa5hvtU4HJbtZlNjEfGodvTzXr9ijQBmox-CHJ3ifNkOxsOrpYfPM6cA0mpm1V3dH4o-84DMwHSLL0F5LtKfDpqLT2ie6mNmU1C3T6hW8oJ69NSAlnTwF2awHgGsj6Ns-kLV6sw-7T5eKhvlIfODKugACAyysmi21rplXS7djvcPo_Ni6UKRRmb_E0VUydNpKnaE2PgTz3R4Tcs4C9BHrcg5av86tyWmcG1d9K7T_tqUwuI"/>
+                </button>
+                <button onclick="setProductImage(this, 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUM0GlRy9ONsCwok6W3VyzULcalsV_kp4m4VoiwlcMwuw7CXIP-7cUf23PR1Nteld03CvgCGWGNNKyKsSJGuRbUCcyCXStOkLvLudx8x7HCk-NdElKC_m1I_PgqIpVOH1UZKmuR0DtpmcO7znSsvpiTwvLl6JFK50-CMipWACKz7bCBbKgmgLg2f55ynjImpklp1ihsiJ5Bu8UTsNSqpZpyfzTq3qqvhxPBU27Paf6JtMIz7EZSJo0hqqEj7ty2dPC498MvxeDvOs')" class="gallery-thumb aspect-square bg-white rounded-xl border border-outline-variant/60 hover:border-secondary transition-all overflow-hidden p-2">
+                    <img alt="Thumb 3" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUM0GlRy9ONsCwok6W3VyzULcalsV_kp4m4VoiwlcMwuw7CXIP-7cUf23PR1Nteld03CvgCGWGNNKyKsSJGuRbUCcyCXStOkLvLudx8x7HCk-NdElKC_m1I_PgqIpVOH1UZKmuR0DtpmcO7znSsvpiTwvLl6JFK50-CMipWACKz7bCBbKgmgLg2f55ynjImpklp1ihsiJ5Bu8UTsNSqpZpyfzTq3qqvhxPBU27Paf6JtMIz7EZSJo0hqqEj7ty2dPC498MvxeDvOs"/>
+                </button>
+                <button onclick="setProductImage(this, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDC-LCE0HzepLJ2a__QSfXb6eyRG-FrIMfVF7WJDUZDj-Sv2jkUk2jB3GHsvrE98EirCGXEhjmbAHVCOyWNMTmV-bJFJa3QQ51A66FSy8kueBB223z94c8T0KfE0eH_vhJJtJTFiNYv-QIDxb44G4XZdvg6Mf79a4ZHsG-sczYx-FoQBKTTX-hAL9mFKvYAztlC0hU1H3nnGx9-TTKXXvwoujhO7RhAbJI0IvNafmogNHo85BQ7o2M2JJX70xZdIispBo3a4z9vPog')" class="gallery-thumb aspect-square bg-white rounded-xl border border-outline-variant/60 hover:border-secondary transition-all overflow-hidden p-2">
+                    <img alt="Thumb 4" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC-LCE0HzepLJ2a__QSfXb6eyRG-FrIMfVF7WJDUZDj-Sv2jkUk2jB3GHsvrE98EirCGXEhjmbAHVCOyWNMTmV-bJFJa3QQ51A66FSy8kueBB223z94c8T0KfE0eH_vhJJtJTFiNYv-QIDxb44G4XZdvg6Mf79a4ZHsG-sczYx-FoQBKTTX-hAL9mFKvYAztlC0hU1H3nnGx9-TTKXXvwoujhO7RhAbJI0IvNafmogNHo85BQ7o2M2JJX70xZdIispBo3a4z9vPog"/>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Right Column: Product Info & Purchase Customizer -->
+        <section class="space-y-lg">
+            <div class="space-y-xs">
+                <!-- Ready Stock & Pulse Urgency -->
+                <div class="flex items-center gap-sm flex-wrap">
+                    <span class="inline-flex items-center gap-1 px-3 py-0.5 bg-on-tertiary-container/10 text-on-tertiary-container rounded-full text-label-sm font-bold">
+                        <span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span> Stok Tersedia
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-error/10 text-error rounded-full text-label-sm font-extrabold animate-pulse-slow">
+                        <span class="w-1.5 h-1.5 bg-error rounded-full"></span> Sisa 5 unit!
+                    </span>
+                </div>
+                <h1 class="text-headline-lg font-black text-on-background tracking-tight">Logitech MX Master 3S - Wireless Precision Mouse</h1>
+                
+                <!-- Stars Interactive reviews -->
+                <div class="flex items-center gap-sm">
+                    <div class="flex text-orange-500">
+                        <span class="material-symbols-outlined text-md" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-md" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-md" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-md" style="font-variation-settings: 'FILL' 1;">star</span>
+                        <span class="material-symbols-outlined text-md" style="font-variation-settings: 'FILL' 1;">star</span>
+                    </div>
+                    <a href="#reviews" onclick="switchTab('ulasan')" class="text-body-sm font-semibold text-secondary hover:underline">48 Ulasan</a>
+                    <span class="text-outline-variant font-light">|</span>
+                    <span class="text-body-sm text-on-surface-variant font-medium">Terjual 300+ unit</span>
+                </div>
+                
+                <p class="text-body-sm text-on-surface-variant">Kategori: <span class="text-secondary font-bold hover:underline cursor-pointer">Peripherals &gt; Mouse</span></p>
+            </div>
+            
+            <!-- Price Card with Count-up animation & Savings highlight -->
+            <div class="py-md px-md bg-white rounded-2xl border border-outline-variant/50 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Harga Spesial</span>
+                    <!-- Animated Price -->
+                    <p class="text-headline-xl font-black text-secondary leading-none" id="animated-price">Rp 1.499.000</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-body-sm text-on-surface-variant line-through font-medium">Rp 1.650.000</span>
+                        <span class="text-[10px] font-black bg-error text-white px-1.5 py-0.5 rounded">DISKON 9%</span>
+                    </div>
+                </div>
+                <div class="bg-on-tertiary-container/10 px-4 py-2.5 rounded-xl text-right">
+                    <span class="text-[10px] font-bold text-on-tertiary-container uppercase tracking-wider block">Hemat Belanja</span>
+                    <span class="text-body-sm font-extrabold text-on-tertiary-container" id="savings-val">Rp 151.000</span>
+                </div>
+            </div>
+            
+            <!-- Quantity Selector & Total Price Calculation -->
+            <div class="flex items-center gap-md py-sm">
+                <span class="text-label-md font-bold text-on-background">Jumlah</span>
+                <div class="flex items-center border border-outline-variant rounded-xl bg-white p-1 shadow-sm">
+                    <button onclick="decrementQty()" class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors">
+                        <span class="material-symbols-outlined text-md">remove</span>
+                    </button>
+                    <span id="qty-indicator" class="w-12 text-center font-bold text-body-md text-on-background">1</span>
+                    <button onclick="incrementQty()" class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors">
+                        <span class="material-symbols-outlined text-md">add</span>
+                    </button>
+                </div>
+                <div class="ml-auto text-right">
+                    <span class="text-[10px] font-bold text-on-surface-variant block uppercase">Total Barang</span>
+                    <span id="total-price" class="text-body-lg font-black text-on-surface">Rp 1.499.000</span>
+                </div>
+            </div>
+
+            <!-- Shipping Estimator with Live Selection JS -->
+            <div class="bg-surface-container-low p-md rounded-2xl border border-outline-variant/60 shadow-sm">
+                <div class="flex items-center gap-xs mb-sm">
+                    <span class="material-symbols-outlined text-secondary">local_shipping</span>
+                    <h3 class="text-label-md font-extrabold text-on-background">Estimasi Ongkos Kirim</h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+                    <div>
+                        <label class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1">Kota Tujuan</label>
+                        <select id="shipping-city" onchange="calculateShipping()" class="w-full bg-white border border-outline-variant/60 rounded-xl px-3 py-2 text-body-sm focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all outline-none">
+                            <option value="12000">Jakarta Pusat</option>
+                            <option value="15000">Depok / Tangerang</option>
+                            <option value="20000">Bandung</option>
+                            <option value="35000">Surabaya</option>
+                            <option value="42000">Medan</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col justify-end text-right sm:text-left">
+                        <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Biaya Ongkir</p>
+                        <p id="shipping-cost" class="text-body-md font-black text-on-surface">Rp 12.000 <span class="text-body-sm font-semibold text-on-surface-variant">(JNE Reguler)</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CTAs with premium hover & ripple feedback -->
+            <div class="flex flex-col sm:flex-row gap-sm pt-sm">
+                <button onclick="addToCart('Logitech MX Master 3S')" class="flex-1 bg-white border-2 border-secondary text-secondary py-3.5 rounded-xl font-bold text-label-md hover:bg-secondary-fixed/30 active:scale-95 transition-all flex items-center justify-center gap-xs">
+                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                    Tambah ke Keranjang
+                </button>
+                <button onclick="buyNow()" class="flex-1 bg-gradient-to-r from-secondary to-secondary-container text-white py-3.5 rounded-xl font-bold text-label-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-xs shadow-md">
+                    <span class="material-symbols-outlined">flash_on</span>
+                    Beli Sekarang
+                </button>
+            </div>
+            
+            <!-- Specs Tabs with Fade animations -->
+            <div class="pt-lg">
+                <div class="flex border-b border-outline-variant/50 mb-md relative">
+                    <button onclick="setTab(this, 'spesifikasi')" class="spec-tab px-md py-2 text-label-md active-tab font-bold text-secondary">Spesifikasi</button>
+                    <button onclick="setTab(this, 'deskripsi')" class="spec-tab px-md py-2 text-label-md text-on-surface-variant hover:text-secondary font-bold">Deskripsi</button>
+                    <button onclick="setTab(this, 'ulasan')" class="spec-tab px-md py-2 text-label-md text-on-surface-variant hover:text-secondary font-bold">Ulasan (48)</button>
+                </div>
+                
+                <!-- Spesifikasi Content -->
+                <div id="spesifikasi-tab" class="tab-content active space-y-0.5 rounded-xl overflow-hidden border border-outline-variant/40">
+                    <div class="grid grid-cols-2 p-3 border-b border-outline-variant/30 bg-white">
+                        <span class="text-body-sm text-on-surface-variant font-bold">Merk</span>
+                        <span class="text-body-sm text-on-surface font-semibold">Logitech G</span>
+                    </div>
+                    <div class="grid grid-cols-2 p-3 border-b border-outline-variant/30 bg-surface-container-low/60">
+                        <span class="text-body-sm text-on-surface-variant font-bold">Tipe</span>
+                        <span class="text-body-sm text-on-surface font-semibold">MX Master 3S</span>
+                    </div>
+                    <div class="grid grid-cols-2 p-3 border-b border-outline-variant/30 bg-white">
+                        <span class="text-body-sm text-on-surface-variant font-bold">Kompatibilitas</span>
+                        <span class="text-body-sm text-on-surface font-semibold">Windows, macOS, Linux, iPadOS</span>
+                    </div>
+                    <div class="grid grid-cols-2 p-3 border-b border-outline-variant/30 bg-surface-container-low/60">
+                        <span class="text-body-sm text-on-surface-variant font-bold">Koneksi</span>
+                        <span class="text-body-sm text-on-surface font-semibold">Bluetooth Low Energy &amp; Logi Bolt</span>
+                    </div>
+                    <div class="grid grid-cols-2 p-3 bg-white">
+                        <span class="text-body-sm text-on-surface-variant font-bold">Warna</span>
+                        <span class="text-body-sm text-on-surface font-semibold">Graphite, Pale Gray</span>
+                    </div>
+                </div>
+                
+                <!-- Deskripsi Content -->
+                <div id="deskripsi-tab" class="tab-content bg-white p-5 rounded-xl border border-outline-variant/40 leading-relaxed text-body-sm text-on-surface-variant space-y-3">
+                    <p class="font-bold text-on-background">Logitech MX Master 3S Wireless Mouse</p>
+                    <p>Memperkenalkan Logitech MX Master 3S – mouse ikonik yang disempurnakan. Kini dengan click senyap (Silent Clicks) dan pelacakan sensor 8.000 DPI di permukaan apa pun termasuk kaca untuk kebebasan bekerja yang lebih presisi.</p>
+                    <p>Dilengkapi roda Scroll MagSpeed elektromagnetik yang super cepat dan presisi hingga 1.000 baris dalam satu detik. Desain ergonomis yang dirancang pas dengan lekukan telapak tangan Anda.</p>
+                </div>
+                
+                <!-- Ulasan Content -->
+                <div id="ulasan-tab" class="tab-content bg-white p-5 rounded-xl border border-outline-variant/40 space-y-4">
+                    <div class="flex items-center gap-md pb-3 border-b border-outline-variant/30">
+                        <div class="text-center">
+                            <p class="text-4xl font-black text-secondary">4.9</p>
+                            <p class="text-[10px] font-bold text-on-surface-variant uppercase">Dari 5 Bintang</p>
+                        </div>
+                        <div class="flex-grow space-y-1">
+                            <div class="flex items-center gap-2 text-body-sm">
+                                <span class="w-12 text-on-surface-variant font-semibold">5 Bintang</span>
+                                <div class="flex-grow h-2 bg-surface-container rounded-full overflow-hidden">
+                                    <div class="bg-secondary h-full rounded-full" style="width: 92%;"></div>
+                                </div>
+                                <span class="w-8 text-right font-bold">92%</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-body-sm">
+                                <span class="w-12 text-on-surface-variant font-semibold">4 Bintang</span>
+                                <div class="flex-grow h-2 bg-surface-container rounded-full overflow-hidden">
+                                    <div class="bg-secondary h-full rounded-full" style="width: 6%;"></div>
+                                </div>
+                                <span class="w-8 text-right font-bold">6%</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-body-sm">
+                                <span class="w-12 text-on-surface-variant font-semibold">3 Bintang</span>
+                                <div class="flex-grow h-2 bg-surface-container rounded-full overflow-hidden">
+                                    <div class="bg-secondary h-full rounded-full" style="width: 2%;"></div>
+                                </div>
+                                <span class="w-8 text-right font-bold">2%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Single review comment -->
+                    <div class="space-y-1 text-body-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">Budi Pratama</span>
+                            <span class="text-on-surface-variant text-[11px]">2 minggu yang lalu</span>
+                        </div>
+                        <div class="flex text-orange-500">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </div>
+                        <p class="text-on-surface-variant">Sangat nyaman dipakai untuk desainer grafis. Tombol silent click beneran hening. Tracking di atas kaca lancar jaya.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Related Products with Quick Shop functionality -->
+    <section class="mt-xl pt-xl border-t border-outline-variant/60">
+        <div class="flex items-center justify-between mb-lg">
+            <h2 class="text-headline-md font-black">Produk Terkait</h2>
+            <a class="text-secondary font-bold text-sm hover:underline flex items-center gap-1" href="#">
+                Lihat Semua
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+            <!-- Related Product 1 -->
+            <div class="bg-white rounded-2xl border border-outline-variant/60 overflow-hidden product-card flex flex-col group cursor-pointer" onclick="window.location.href='detail_produk.html'">
+                <div class="aspect-square bg-surface-container-low p-5 relative overflow-hidden flex items-center justify-center">
+                    <img alt="Related 1" class="w-4/5 h-4/5 object-contain group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQI9zKerPi5R7OlhdkrZwFYeDW4r9prC2zTb2-z6uCpBYpt78fYt9DLNej5aS0fVVTe2esyn0DS1pjmrKNH3R76io4ryRpk3iDJllBuu_278wGOnuyA1NFTsTYciiKfjEqQsgWpQualQqsCT7Fs5v8rQ_M_VgL1hPKf7BUb_RzAycItbSz5gpPl-ntA9-c4oqWVit0LeMmxuf02coHtO_vdtYAFkRnOIPfLTAZbrUegOWFovGuwk7TyuYbOcBElzy5-XgYmrSGydM"/>
+                    <button onclick="event.stopPropagation(); addToCart('Logitech G915 TKL')" class="absolute bottom-3 right-3 w-10 h-10 bg-secondary text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:scale-105 active:scale-95" title="Tambah ke keranjang">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-body-sm font-bold text-on-background line-clamp-1">Logitech G915 TKL</h4>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+                            <span class="text-[11px] font-bold text-on-tertiary-container">Stok Tersedia</span>
+                        </div>
+                    </div>
+                    <p class="text-body-md font-black text-secondary mt-2">Rp 2.199.000</p>
+                </div>
+            </div>
+            
+            <!-- Related Product 2 -->
+            <div class="bg-white rounded-2xl border border-outline-variant/60 overflow-hidden product-card flex flex-col group cursor-pointer" onclick="window.location.href='detail_produk.html'">
+                <div class="aspect-square bg-surface-container-low p-5 relative overflow-hidden flex items-center justify-center">
+                    <img alt="Related 2" class="w-4/5 h-4/5 object-contain group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWuNBx6R4idS1bsvxRLtepr2Ot3ae5tLy8yfzpnZHdYLjHgNs6bpdOXDmBAyAqTcEhBTj5QGGesvtMvluB3rQam0i5EO-7Doiva7najK60HnN-kIWj4VelDswqj04oObA8S1vC_san9JZO01i-ulwzClnzEKhpipH_aI2OHFr0PnyPi2j9VV6fkN6HJOPEK_dmwKh2ZgvNB36DVO96Z9USM4r9ZI3TicM7EOSe_sTIN6zFghBwNbU42mtOEhTvereHUJIE5Hhqqbg"/>
+                    <button onclick="event.stopPropagation(); addToCart('Logitech MX Keys Mini')" class="absolute bottom-3 right-3 w-10 h-10 bg-secondary text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:scale-105 active:scale-95" title="Tambah ke keranjang">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-body-sm font-bold text-on-background line-clamp-1">Logitech MX Keys Mini</h4>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+                            <span class="text-[11px] font-bold text-on-tertiary-container">Stok Tersedia</span>
+                        </div>
+                    </div>
+                    <p class="text-body-md font-black text-secondary mt-2">Rp 1.149.000</p>
+                </div>
+            </div>
+            
+            <!-- Related Product 3 (Added fallback icon since original image source was empty) -->
+            <div class="bg-white rounded-2xl border border-outline-variant/60 overflow-hidden product-card flex flex-col group cursor-pointer" onclick="window.location.href='detail_produk.html'">
+                <div class="aspect-square bg-surface-container-low p-5 relative overflow-hidden flex items-center justify-center">
+                    <span class="material-symbols-outlined text-6xl text-outline-variant group-hover:scale-105 transition-transform duration-300">texture</span>
+                    <button onclick="event.stopPropagation(); addToCart('TechSpec Desk Mat Pro')" class="absolute bottom-3 right-3 w-10 h-10 bg-secondary text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:scale-105 active:scale-95" title="Tambah ke keranjang">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-body-sm font-bold text-on-background line-clamp-1">TechSpec Desk Mat Pro</h4>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+                            <span class="text-[11px] font-bold text-on-tertiary-container">Stok Tersedia</span>
+                        </div>
+                    </div>
+                    <p class="text-body-md font-black text-secondary mt-2">Rp 349.000</p>
+                </div>
+            </div>
+            
+            <!-- Related Product 4 -->
+            <div class="bg-white rounded-2xl border border-outline-variant/60 overflow-hidden product-card flex flex-col group cursor-pointer" onclick="window.location.href='detail_produk.html'">
+                <div class="aspect-square bg-surface-container-low p-5 relative overflow-hidden flex items-center justify-center">
+                    <img alt="Related 4" class="w-4/5 h-4/5 object-contain group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS7kI4mDYhPU85yojpDvI7oYxZylscF6MlR1PMI7sqs3N9oyy2nj4ra3mMH4RT7mbltAKnwCecfVFovmZhWLDTazqeDtWMOYEEa9s31WupchGuJxIHQlMOyBm_Wo81LGLR05YYTW06GRDkI3b4arjFcCMsTgn5baGn6gDUk3hvGVD3uNlPaj3xSCcTBmjv9FbiKxh16ct8-_WgaUWfrI29XoI-RtzqzIoJrT-GY-5L8L01Y3MVAa3xwsVPrHO2dUxRQWxhKeReZsI"/>
+                    <button onclick="event.stopPropagation(); addToCart('Logitech Lift Vertical')" class="absolute bottom-3 right-3 w-10 h-10 bg-secondary text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:scale-105 active:scale-95" title="Tambah ke keranjang">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-1 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-body-sm font-bold text-on-background line-clamp-1">Logitech Lift Vertical</h4>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full"></span>
+                            <span class="text-[11px] font-bold text-on-tertiary-container">Stok Tersedia</span>
+                        </div>
+                    </div>
+                    <p class="text-body-md font-black text-secondary mt-2">Rp 999.000</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Lightbox Modal Overlay UI -->
+<div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-md hidden opacity-0" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white hover:text-outline-variant flex items-center justify-center w-12 h-12 bg-white/10 rounded-full backdrop-blur-md active:scale-95 transition-transform" onclick="closeLightbox(event)">
+        <span class="material-symbols-outlined text-2xl">close</span>
+    </button>
+    <img id="lightbox-image" class="max-w-full max-h-[80vh] object-contain rounded-xl select-none" src="" onclick="event.stopPropagation()"/>
+</div>
+
+<!-- Toast UI -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 bg-primary-container text-white px-5 py-3 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 toast-notification">
+    <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-md">done</span>
+    </div>
+    <div>
+        <p class="text-body-sm font-bold text-white" id="toast-title">Berhasil ditambahkan!</p>
+        <p class="text-[11px] text-white/60" id="toast-msg">Barang masuk keranjang belanja.</p>
+    </div>
+</div>
+
+<footer class="w-full py-xl px-margin-desktop bg-primary-container border-t border-outline-variant/10 text-white mt-lg relative overflow-hidden">
+    <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+    <div class="max-w-max-width mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl relative z-10">
+        <div class="col-span-1 space-y-md">
+            <h2 class="text-headline-md font-black text-white tracking-tighter flex items-center gap-1">
+                <span class="bg-secondary text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </h2>
+            <p class="text-body-sm text-on-primary-container pr-md leading-relaxed">
+                Marketplace hardware dan aksesoris IT terlengkap dengan harga transparan, produk bergaransi resmi, dan pengiriman cepat ke seluruh Indonesia.
+            </p>
+            <p class="text-[12px] text-on-primary-container leading-relaxed">
+                <span class="font-bold text-white block mb-1">Kantor Pusat:</span>
+                Techspec Jakarta HQ<br/>Lantai 5, Jakarta Selatan
+            </p>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Jelajahi</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Beranda</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="detail_produk.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Produk</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html#categories"><span class="w-1 h-1 bg-secondary rounded-full"></span>Kategori</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="#"><span class="w-1 h-1 bg-secondary rounded-full"></span>Brand Resmi</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Bantuan &amp; Layanan</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Pusat Bantuan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="checkout.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Keranjang</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="status_pesanan.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Lacak Pesanan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Kebijakan Privasi</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Syarat &amp; Ketentuan</a></li>
+            </ul>
+        </div>
+        <div class="space-y-md">
+            <h4 class="text-white font-bold text-label-md uppercase tracking-wider">Langganan Newsletter</h4>
+            <p class="text-body-sm text-on-primary-container leading-relaxed">Dapatkan voucher eksklusif dan update hardware terbaru langsung ke email Anda.</p>
+            <form class="flex gap-xs" onsubmit="handleSubscribe(event)">
+                <input class="bg-white/10 text-body-sm text-white placeholder:text-white/40 border-none rounded-lg px-sm py-2 w-full focus:ring-2 focus:ring-secondary focus:bg-white/20 outline-none" placeholder="Email Anda" type="email"/>
+                <button type="submit" class="bg-secondary text-white px-sm py-2 rounded-lg material-symbols-outlined hover:bg-secondary/90 transition-all shadow-md">send</button>
+            </form>
+            <div class="pt-2">
+                <h5 class="text-white font-bold mb-2 text-label-sm uppercase tracking-wider">Ikuti Kami</h5>
+                <div class="flex gap-sm">
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">share</span>
+                    </a>
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">alternate_email</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-max-width mx-auto pt-lg border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-sm relative z-10">
+        <p class="text-[12px] text-on-primary-container">© 2024 TECHSPEC IT Solutions. Semua hak dilindungi.</p>
+        <div class="flex gap-md">
+            <img alt="Secure Payment" class="h-6 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjKkM3XwLYkuyyy3GA76lpZE08CgjSdzU1euAukXRdAWD753apsGygYuX4Su-f2P9dorBFBTYsvsEUk1LY1hmwrX93wXoKinJefOhbTJEyKLdWuLy_MOOrwpcHLbAk2hYQGddh8_8MiZzry5sCIXZDqWIiS6mnAO5xCGDVyYEcSAx-IDy8fPtmNdpby2jDTRrTvn0oQVOAWm-BbLmK2Bb9JfkKFHqwZwI-4azOvyIuwcRNEz1EzCmxWbOrS_AV-4R3Y1iLGEZpLW8"/>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Global Variable
+    let currentPrice = 1499000;
+    let qty = 1;
+
+    // Smooth header effect on scroll
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Gallery switching with visual borders
+    function setProductImage(buttonEl, url) {
+        document.querySelectorAll('.gallery-thumb').forEach(btn => {
+            btn.classList.remove('border-secondary', 'border-2');
+            btn.classList.add('border-outline-variant/60', 'border');
+        });
+        buttonEl.classList.remove('border-outline-variant/60', 'border');
+        buttonEl.classList.add('border-secondary', 'border-2');
+        
+        // Update main image src
+        document.getElementById('main-product-image').src = url;
+    }
+
+    // Zoom-in effect on hover inside main gallery container
+    const zoomContainer = document.querySelector('.zoom-container');
+    const zoomImage = document.getElementById('main-product-image');
+
+    zoomContainer.addEventListener('mousemove', (e) => {
+        const rect = zoomContainer.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        zoomImage.style.transformOrigin = `${x}% ${y}%`;
+        zoomImage.style.transform = 'scale(1.5)';
+    });
+
+    zoomContainer.addEventListener('mouseleave', () => {
+        zoomImage.style.transform = 'scale(1)';
+        zoomImage.style.transformOrigin = 'center center';
+    });
+
+    // Lightbox modal functions
+    function openLightbox() {
+        const lightbox = document.getElementById('lightbox-modal');
+        const mainImg = document.getElementById('main-product-image');
+        const lbImg = document.getElementById('lightbox-image');
+        
+        lbImg.src = mainImg.src;
+        lightbox.classList.remove('hidden');
+        setTimeout(() => {
+            lightbox.style.opacity = '1';
+        }, 10);
+    }
+
+    function closeLightbox(event) {
+        if (event) event.stopPropagation();
+        const lightbox = document.getElementById('lightbox-modal');
+        lightbox.style.opacity = '0';
+        setTimeout(() => {
+            lightbox.classList.add('hidden');
+        }, 350);
+    }
+
+    // Tab switcher with fade transitions
+    function setTab(buttonEl, tabId) {
+        document.querySelectorAll('.spec-tab').forEach(btn => {
+            btn.classList.remove('active-tab', 'text-secondary');
+            btn.classList.add('text-on-surface-variant');
+        });
+        buttonEl.classList.add('active-tab', 'text-secondary');
+        buttonEl.classList.remove('text-on-surface-variant');
+
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+    }
+
+    // Quantity selectors and calculation
+    function formatCurrency(val) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val).replace("IDR", "Rp");
+    }
+
+    function updateCalculations() {
+        document.getElementById('qty-indicator').textContent = qty;
+        const total = currentPrice * qty;
+        document.getElementById('total-price').textContent = formatCurrency(total);
+    }
+
+    function incrementQty() {
+        qty++;
+        updateCalculations();
+    }
+
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.classList.add('scale-[0.98]'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('scale-[0.98]'));
+        btn.addEventListener('mouseleave', () => btn.classList.remove('scale-[0.98]'));
+    });
+
+    function decrementQty() {
+        if (qty > 1) {
+            qty--;
+            updateCalculations();
+        }
+    }
+
+    // Shipping calculation mock
+    function calculateShipping() {
+        const select = document.getElementById('shipping-city');
+        const cost = parseInt(select.value);
+        document.getElementById('shipping-cost').innerHTML = `${formatCurrency(cost)} <span class="text-body-sm font-semibold text-on-surface-variant">(JNE Reguler)</span>`;
+    }
+
+    // Toast Manager
+    let toastTimeout;
+    function showToast(title, message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-msg').textContent = message;
+        
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function addToCart(productName) {
+        showToast("Keranjang Belanja", `${productName} (${qty} unit) masuk keranjang belanja.`);
+    }
+
+    function buyNow() {
+        showToast("Membeli Sekarang", `Membuka kasir pembayaran untuk ${qty} barang.`);
+        setTimeout(() => {
+            window.location.href = 'checkout.html';
+        }, 1200);
+    }
+
+    function handleSubscribe(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input').value;
+        showToast("Terima Kasih!", `Pendaftaran untuk ${email} berhasil.`);
+        event.target.reset();
+    }
+
+    // Count Up price animation
+    function animatePriceCount() {
+        const target = currentPrice;
+        let current = 0;
+        const speed = 20; // Step speed
+        const increment = Math.ceil(target / 40); // 40 steps
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            document.getElementById('animated-price').textContent = formatCurrency(current);
+        }, speed);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        animatePriceCount();
+        calculateShipping();
+    });
+</script>
+</body>
+</html>

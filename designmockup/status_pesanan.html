@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Status Pesanan | TECHSPEC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            transition: transform 0.2s ease, font-variation-settings 0.2s ease;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eff4ff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #adc6ff;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0058be;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(229, 238, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-header.scrolled {
+            box-shadow: 0 4px 20px -5px rgba(19, 27, 46, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Stepper custom backgrounds */
+        .stepper-line {
+            background: repeating-linear-gradient(90deg, #c6c6cd 0, #c6c6cd 4px, transparent 4px, transparent 8px);
+        }
+
+        /* Active Navigation Line */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #0058be;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Animations */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(0, 88, 190, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(0, 88, 190, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 88, 190, 0); }
+        }
+        @keyframes rotate-sync {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-in-chat {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+        .animate-rotate-sync {
+            animation: rotate-sync 2.5s infinite linear;
+        }
+        .animate-slide-up {
+            animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slide-chat {
+            animation: slide-in-chat 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Image Zoom Hover */
+        .zoom-img-box {
+            overflow: hidden;
+        }
+        .zoom-img-box img {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .zoom-img-box:hover img {
+            transform: scale(1.08);
+        }
+
+        /* Support Chat Overlay style */
+        #chat-drawer {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #chat-drawer.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Print styling overrides */
+        @media print {
+            header, footer, .quick-actions, #chat-drawer, .print-btn, .chat-btn-container, .breadcrumbs {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            main {
+                padding: 0 !important;
+            }
+            .product-card-shadow {
+                box-shadow: none !important;
+                border: 1px solid #c6c6cd !important;
+            }
+        }
+
+        .toast-notification {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#7c839b",
+                        "background": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary-container": "#009844",
+                        "inverse-primary": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c6c6cd",
+                        "on-secondary-fixed-variant": "#004395",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed-dim": "#4ae176",
+                        "on-background": "#0b1c30",
+                        "surface": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#2170e4",
+                        "primary": "#000000",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#fefcff",
+                        "secondary": "#0058be",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary-fixed": "#002109",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565e74",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed-variant": "#005321",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#e5eeff",
+                        "tertiary-fixed": "#6bff8f",
+                        "inverse-surface": "#213145",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-container": "#002109",
+                        "outline": "#76777d",
+                        "tertiary": "#000000"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "48px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "max-width": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "24px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "lg": "40px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-md overflow-x-hidden">
+<header class="sticky top-0 w-full z-50 glass-header scrolled">
+    <!-- Top Bar -->
+    <nav class="flex items-center justify-between px-margin-desktop h-20 max-w-max-width mx-auto" id="main-nav">
+        <div class="flex items-center gap-xl">
+            <a class="text-headline-lg font-black tracking-tighter text-secondary hover:opacity-85 transition-opacity flex items-center gap-1" href="beranda.html">
+                <span class="bg-gradient-to-r from-secondary to-secondary-container text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </a>
+            <div class="hidden lg:flex items-center gap-lg">
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="beranda.html">Beranda</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="detail_produk.html">Produk</a>
+                <a class="text-on-surface-variant font-medium hover:text-secondary pb-1 transition-all duration-200 text-label-md font-label-md nav-link" href="beranda.html#categories">Kategori</a>
+                <a class="text-secondary pb-1 text-label-md font-label-md nav-link active transition-all duration-200" href="status_pesanan.html">Lacak Pesanan</a>
+            </div>
+        </div>
+        <div class="flex-grow max-w-md px-lg hidden md:block">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                <input class="bg-surface-container-low border border-outline-variant/60 rounded-xl pl-10 pr-4 py-2 text-body-sm w-full focus:ring-2 focus:ring-secondary/50 focus:border-secondary focus:bg-white transition-all outline-none" placeholder="Cari hardware (e.g. Keyboard Mechanical, SSD)..." type="text"/>
+            </div>
+        </div>
+        <div class="flex items-center gap-sm">
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Notifikasi">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full animate-ping"></span>
+                <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error border-2 border-white rounded-full"></span>
+            </button>
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all relative group" title="Keranjang" onclick="window.location.href='checkout.html'">
+                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="shopping_cart">shopping_cart</span>
+                <span class="absolute -top-0.5 -right-0.5 bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md group-hover:scale-110 transition-transform">2</span>
+            </button>
+            <div class="w-px h-6 bg-outline-variant/60 mx-xs"></div>
+            <button class="flex items-center gap-xs p-1.5 hover:bg-surface-container/50 rounded-xl transition-all">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop" class="w-7 h-7 rounded-full object-cover border border-secondary/20" alt="Avatar"/>
+                <span class="text-body-sm font-semibold text-on-surface hidden xl:block">Adrian Wijaya</span>
+            </button>
+        </div>
+    </nav>
+    <!-- Secondary Category Nav -->
+    <div class="bg-white/60 border-t border-outline-variant/40">
+        <div class="max-w-max-width mx-auto px-margin-desktop flex items-center gap-lg h-10 overflow-x-auto hide-scrollbar">
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Mouse &amp; Keyboard</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Laptop &amp; PC</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Audio &amp; Video</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Penyimpanan</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Alat Servis</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Kabel &amp; Adaptor</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-medium transition-colors" href="#">Printer</a>
+            <a class="text-body-sm text-on-surface-variant whitespace-nowrap hover:text-secondary font-bold text-error flex items-center gap-1" href="#"><span class="w-1.5 h-1.5 bg-error rounded-full animate-pulse"></span>Pre-Order</a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-max-width mx-auto px-margin-desktop py-lg space-y-lg animate-slide-up">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-xs text-body-sm text-on-surface-variant mb-4 breadcrumbs">
+        <a class="hover:text-secondary transition-colors" href="beranda.html">Beranda</a>
+        <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+        <span class="text-on-surface font-semibold">Status Pesanan</span>
+    </nav>
+
+    <!-- Order Header Card -->
+    <section class="bg-white p-6 rounded-2xl border border-outline-variant/40 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+        <div>
+            <h1 class="text-headline-md font-black text-on-background tracking-tight mb-1">Status Pesanan</h1>
+            <div class="flex flex-wrap gap-x-sm gap-y-1 text-body-sm text-on-surface-variant font-medium">
+                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[18px]">receipt</span> Order #TS-9823410</span>
+                <span class="text-outline-variant/60 font-light">|</span>
+                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[18px]">person</span> Adrian Wijaya</span>
+                <span class="text-outline-variant/60 font-light">|</span>
+                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[18px]">calendar_today</span> 24 Oktober 2023, 14:20 WIB</span>
+            </div>
+        </div>
+        <div class="bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-label-md font-black flex items-center gap-xs border border-secondary/20 shadow-sm">
+            <span class="material-symbols-outlined text-[18px] animate-rotate-sync" style="font-variation-settings: 'FILL' 1;">sync</span>
+            Sedang Diproses
+        </div>
+    </section>
+
+    <!-- Progress Tracker (Animated loader line fills on load) -->
+    <section class="bg-white p-8 rounded-2xl border border-outline-variant/40 shadow-sm overflow-x-auto">
+        <div class="min-w-[800px] relative flex justify-between">
+            <!-- Background Line -->
+            <div class="absolute top-5 left-0 w-full h-[2.5px] stepper-line"></div>
+            <!-- Animated Progress Fill (Fills to 50% representing processed state) -->
+            <div id="progress-fill" class="absolute top-5 left-0 w-0 h-[2.5px] bg-secondary transition-all duration-1000 ease-out"></div>
+            
+            <!-- Step 1 Complete -->
+            <div class="relative z-10 flex flex-col items-center gap-sm">
+                <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+                    <span class="material-symbols-outlined text-[20px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+                </div>
+                <span class="text-label-md font-bold text-secondary text-center">Pesanan Dibuat</span>
+                <span class="text-[10px] text-on-surface-variant/80 font-medium">14:20 WIB</span>
+            </div>
+            
+            <!-- Step 2 Complete -->
+            <div class="relative z-10 flex flex-col items-center gap-sm">
+                <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+                    <span class="material-symbols-outlined text-[20px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+                </div>
+                <span class="text-label-md font-bold text-secondary text-center">Pembayaran Berhasil</span>
+                <span class="text-[10px] text-on-surface-variant/80 font-medium">14:22 WIB</span>
+            </div>
+            
+            <!-- Step 3 Active processed -->
+            <div class="relative z-10 flex flex-col items-center gap-sm">
+                <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center ring-4 ring-secondary-fixed/50 animate-pulse-ring transition-transform hover:scale-105">
+                    <span class="material-symbols-outlined text-[20px] animate-rotate-sync">sync</span>
+                </div>
+                <span class="text-label-md font-black text-secondary text-center">Sedang Diproses</span>
+                <span class="text-[10px] text-on-surface-variant/80 font-semibold animate-pulse">Sedang QC Perakitan</span>
+            </div>
+            
+            <!-- Step 4 Pending -->
+            <div class="relative z-10 flex flex-col items-center gap-sm opacity-60">
+                <div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                </div>
+                <span class="text-label-md font-semibold text-on-surface-variant text-center">Dikirim</span>
+                <span class="text-[10px] text-on-surface-variant/40">-</span>
+            </div>
+            
+            <!-- Step 5 Pending -->
+            <div class="relative z-10 flex flex-col items-center gap-sm opacity-60">
+                <div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">verified</span>
+                </div>
+                <span class="text-label-md font-semibold text-on-surface-variant text-center">Selesai</span>
+                <span class="text-[10px] text-on-surface-variant/40">-</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+        <!-- Left Side: Product List -->
+        <div class="lg:col-span-2 space-y-md">
+            <h2 class="text-headline-md font-extrabold text-on-background px-1">Barang Yang Dibeli</h2>
+            
+            <div class="space-y-sm">
+                <!-- Product Card 1 -->
+                <div class="bg-white p-4 rounded-2xl border border-outline-variant/40 flex gap-md group hover:border-secondary transition-colors duration-300 zoom-img-box">
+                    <div class="w-24 h-24 bg-surface-container rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-outline-variant/30">
+                        <img class="w-4/5 h-4/5 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASaWKvwFCs3TaJ9vC3-CgHH5w5A_xey6svufC6gAeU5hU92cNbjfthcGacqColD4HtE733T4bTpg07co2X2VqiX_FQhCXMGCZsreJgIet9x1wk1lZw7x0IU5lNPrCB4okQLv4fXls6LvVpVHh4vBz4YaAYqANHC7Q2Cr8CMURSzGnDUBulULsq3tqH7WZsWaJ3UspzMtgudzlHf44AS81cVITuN_X4O3nUSMkkyO23ylkPYxyA-6coEUXS7pkV6XmXA6YTIL-djxI" alt="RTX 4070"/>
+                    </div>
+                    <div class="flex-grow py-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-body-md text-on-background group-hover:text-secondary transition-colors cursor-pointer">NVIDIA GeForce RTX 4070 SUPER 12GB OC</h3>
+                            <p class="text-[11px] font-semibold text-on-tertiary-container mt-1 bg-on-tertiary-container/10 px-2 py-0.5 rounded w-fit">Garansi Resmi 3 Tahun</p>
+                        </div>
+                        <div class="flex justify-between items-end mt-2">
+                            <span class="text-body-sm font-semibold text-on-surface-variant">1 x Unit</span>
+                            <span class="text-body-lg font-black text-secondary">Rp 11.249.000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Card 2 -->
+                <div class="bg-white p-4 rounded-2xl border border-outline-variant/40 flex gap-md group hover:border-secondary transition-colors duration-300 zoom-img-box">
+                    <div class="w-24 h-24 bg-surface-container rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-outline-variant/30">
+                        <img class="w-4/5 h-4/5 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkoNaXozveC7HIQ-FQGEG3t-6N4CcI97Ov5z1f1lpWMOpgDxSmMQRNWsK2YJj61KO8yZLkkDTvgjwH8YqURA8wNvodIo39onHKxCmpmp3Ewa2VtsAhI5NMivzhOYUZEqj26yj7HKcxivDbCgaKwGzgWAMTwTIDvxk40YK4OzBYwHythN3Uv0ZxWCIdN1q68p9LDrph_Z6ocJoHfokZAsB9fwntxhqOCHZOLPPoUskyo3gb9essS5gkQZ8Yt9J1o5pYgGc_mnqVs6A" alt="Samsung SSD"/>
+                    </div>
+                    <div class="flex-grow py-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-body-md text-on-background group-hover:text-secondary transition-colors cursor-pointer">Samsung 990 Pro 2TB NVMe M.2 SSD</h3>
+                            <p class="text-[11px] font-semibold text-secondary mt-1 bg-secondary-fixed/50 px-2 py-0.5 rounded w-fit">Read Speed 7450MB/s</p>
+                        </div>
+                        <div class="flex justify-between items-end mt-2">
+                            <span class="text-body-sm font-semibold text-on-surface-variant">2 x Unit</span>
+                            <span class="text-body-lg font-black text-secondary">Rp 5.798.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Notes with glowing accent -->
+            <div class="bg-surface-container-low/60 p-5 rounded-2xl border-l-4 border-secondary shadow-sm">
+                <div class="flex items-center gap-xs mb-2">
+                    <span class="material-symbols-outlined text-secondary">sticky_note_2</span>
+                    <h3 class="text-body-sm font-extrabold text-on-background uppercase tracking-wider">Catatan Pengecekan IT</h3>
+                </div>
+                <p class="text-body-sm text-on-surface-variant leading-relaxed">
+                    Pesanan sedang dalam tahap perakitan dan pengecekan QC (Quality Control). Teknisi kami melakukan stress test komponen selama 30 menit. Estimasi diserahkan ke kurir JNE pukul 16:00 WIB. Nomor telepon kurir akan dikirimkan otomatis jika sudah dalam perjalanan.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Right Side: Summary & Action Sidebar -->
+        <div class="space-y-md">
+            <h2 class="text-headline-md font-extrabold text-on-background px-1">Ringkasan</h2>
+            
+            <div class="bg-white rounded-2xl border border-outline-variant/40 overflow-hidden shadow-sm">
+                <div class="bg-primary-container px-4 py-3 border-b border-white/5">
+                    <h3 class="text-body-sm font-bold text-white uppercase tracking-wider">Detail Pengiriman</h3>
+                </div>
+                <div class="p-4 space-y-md">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Kurir Pengiriman</span>
+                        <p class="text-body-sm font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-secondary">local_shipping</span> JNE - Express Reguler (REG)</p>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Alamat Pengiriman</span>
+                        <p class="text-body-sm leading-relaxed text-on-surface-variant font-medium">
+                            <span class="font-extrabold text-on-background">Adrian Wijaya</span><br/>
+                            Jl. Sudirman No. 45, Apartemen City View, Tower B Lt. 12<br/>
+                            Jakarta Pusat, DKI Jakarta 10210
+                        </p>
+                    </div>
+                    <!-- Estimated Countdown Clock -->
+                    <div class="space-y-1 bg-surface-container-low/50 p-3 rounded-xl border border-outline-variant/30">
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1">Estimasi Tiba Dalam</span>
+                        <div class="flex items-center gap-1 font-mono text-secondary font-black text-body-md" id="delivery-countdown">
+                            1 Hari 05 Jam 38 Menit
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-primary-container px-4 py-3 border-t border-b border-white/5">
+                    <h3 class="text-body-sm font-bold text-white uppercase tracking-wider">Detail Pembayaran</h3>
+                </div>
+                <div class="p-4 space-y-xs">
+                    <div class="flex justify-between text-body-sm font-semibold">
+                        <span class="text-on-surface-variant">Subtotal Produk</span>
+                        <span class="text-on-background">Rp 17.047.000</span>
+                    </div>
+                    <div class="flex justify-between text-body-sm font-semibold">
+                        <span class="text-on-surface-variant">Biaya Pengiriman</span>
+                        <span class="text-on-background">Rp 45.000</span>
+                    </div>
+                    <div class="flex justify-between text-body-sm font-semibold">
+                        <span class="text-on-surface-variant">Asuransi &amp; Proteksi</span>
+                        <span class="text-on-background">Rp 15.000</span>
+                    </div>
+                    <div class="pt-2 mt-2 border-t border-outline-variant/40 flex justify-between items-center">
+                        <span class="text-body-sm font-bold text-primary">Total Pembayaran</span>
+                        <span class="text-body-lg font-black text-secondary">Rp 17.107.000</span>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-dashed border-outline-variant/80 flex items-center justify-between">
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-secondary text-[20px]">account_balance</span>
+                            <span class="text-body-sm font-semibold">Mandiri VA</span>
+                        </div>
+                        <span class="text-on-tertiary-container text-[10px] font-black px-2.5 py-0.5 bg-on-tertiary-container/10 border border-on-tertiary-container/20 rounded-full">LUNAS</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex flex-col gap-sm quick-actions">
+                <button onclick="toggleChatDrawer()" class="w-full bg-secondary hover:bg-secondary-container text-white py-3 rounded-xl font-bold text-label-md flex items-center justify-center gap-xs transition-all shadow-md active:scale-95">
+                    <span class="material-symbols-outlined text-[20px]">chat</span>
+                    Hubungi Admin / CS
+                </button>
+                <button onclick="window.print()" class="print-btn w-full border border-secondary text-secondary hover:bg-secondary-fixed/30 py-3 rounded-xl font-bold text-label-md flex items-center justify-center gap-xs transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[20px]">print</span>
+                    Cetak Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Chat Support Drawer Overlay (Slides from right) -->
+<div id="chat-drawer" class="fixed inset-0 z-50 bg-black/50 flex justify-end hidden opacity-0 transition-opacity duration-300" onclick="toggleChatDrawer()">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-chat" onclick="event.stopPropagation()">
+        <!-- Chat Header -->
+        <div class="bg-primary-container p-4 text-white flex items-center justify-between">
+            <div class="flex items-center gap-sm">
+                <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white relative">
+                    <span class="material-symbols-outlined">support_agent</span>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-tertiary-fixed border-2 border-primary-container rounded-full"></span>
+                </div>
+                <div>
+                    <h3 class="text-body-md font-bold">Customer Support AI</h3>
+                    <p class="text-[10px] text-white/60">Online • Siap membantu</p>
+                </div>
+            </div>
+            <button onclick="toggleChatDrawer()" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                <span class="material-symbols-outlined text-white">close</span>
+            </button>
+        </div>
+        <!-- Chat Body Message Stream -->
+        <div id="chat-stream" class="flex-grow p-4 overflow-y-auto space-y-md bg-surface-container-low/30">
+            <!-- Bot message -->
+            <div class="flex gap-2 items-start max-w-[85%]">
+                <div class="w-7 h-7 rounded-full bg-secondary text-white flex items-center justify-center flex-shrink-0 text-xs">
+                    <span class="material-symbols-outlined text-sm">support_agent</span>
+                </div>
+                <div class="bg-white border border-outline-variant/40 p-3 rounded-2xl rounded-tl-none shadow-sm">
+                    <p class="text-body-sm text-on-surface">Halo Adrian! Terima kasih telah berbelanja di TECHSPEC. Ada yang bisa saya bantu terkait pesanan #TS-9823410 Anda?</p>
+                </div>
+            </div>
+        </div>
+        <!-- Chat Input Form -->
+        <form onsubmit="sendMessage(event)" class="p-4 border-t border-outline-variant/40 bg-white flex gap-sm">
+            <input id="chat-input" required class="flex-grow border border-outline-variant/60 rounded-xl px-4 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all outline-none" placeholder="Tulis pesan Anda..."/>
+            <button type="submit" class="bg-secondary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-secondary/90 transition-colors shadow active:scale-95">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Toast UI -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 bg-primary-container text-white px-5 py-3 rounded-xl shadow-2xl border border-white/10 flex items-center gap-3 toast-notification">
+    <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+        <span class="material-symbols-outlined text-white text-md">done</span>
+    </div>
+    <div>
+        <p class="text-body-sm font-bold text-white" id="toast-title">Berhasil!</p>
+        <p class="text-[11px] text-white/60" id="toast-msg">Invoice siap dicetak.</p>
+    </div>
+</div>
+
+<footer class="w-full py-xl px-margin-desktop bg-primary-container border-t border-outline-variant/10 text-white mt-lg relative overflow-hidden">
+    <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
+    <div class="max-w-max-width mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl relative z-10">
+        <div class="col-span-1 space-y-md">
+            <h2 class="text-headline-md font-black text-white tracking-tighter flex items-center gap-1">
+                <span class="bg-secondary text-white px-2 py-0.5 rounded-lg text-headline-md font-extrabold mr-1">TS</span>TECHSPEC
+            </h2>
+            <p class="text-body-sm text-on-primary-container pr-md leading-relaxed">
+                Marketplace hardware dan aksesoris IT terlengkap dengan harga transparan, produk bergaransi resmi, dan pengiriman cepat ke seluruh Indonesia.
+            </p>
+            <p class="text-[12px] text-on-primary-container leading-relaxed">
+                <span class="font-bold text-white block mb-1">Kantor Pusat:</span>
+                Techspec Jakarta HQ<br/>Lantai 5, Jakarta Selatan
+            </p>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Jelajahi</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Beranda</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="detail_produk.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Produk</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="beranda.html#categories"><span class="w-1 h-1 bg-secondary rounded-full"></span>Kategori</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="#"><span class="w-1 h-1 bg-secondary rounded-full"></span>Brand Resmi</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-md text-label-md uppercase tracking-wider">Bantuan &amp; Layanan</h4>
+            <ul class="space-y-3">
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Pusat Bantuan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="checkout.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Keranjang</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors flex items-center gap-1.5" href="status_pesanan.html"><span class="w-1 h-1 bg-secondary rounded-full"></span>Lacak Pesanan</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Kebijakan Privasi</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-body-sm transition-colors" href="#">Syarat &amp; Ketentuan</a></li>
+            </ul>
+        </div>
+        <div class="space-y-md">
+            <h4 class="text-white font-bold text-label-md uppercase tracking-wider">Langganan Newsletter</h4>
+            <p class="text-body-sm text-on-primary-container leading-relaxed">Dapatkan voucher eksklusif dan update hardware terbaru langsung ke email Anda.</p>
+            <form class="flex gap-xs" onsubmit="handleSubscribe(event)">
+                <input class="bg-white/10 text-body-sm text-white placeholder:text-white/40 border-none rounded-lg px-sm py-2 w-full focus:ring-2 focus:ring-secondary focus:bg-white/20 outline-none" placeholder="Email Anda" type="email"/>
+                <button type="submit" class="bg-secondary text-white px-sm py-2 rounded-lg material-symbols-outlined hover:bg-secondary/90 transition-all shadow-md">send</button>
+            </form>
+            <div class="pt-2">
+                <h5 class="text-white font-bold mb-2 text-label-sm uppercase tracking-wider">Ikuti Kami</h5>
+                <div class="flex gap-sm">
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">share</span>
+                    </a>
+                    <a class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-secondary hover:scale-110 transition-all text-white" href="#">
+                        <span class="material-symbols-outlined text-[18px]">alternate_email</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-max-width mx-auto pt-lg border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-sm relative z-10">
+        <p class="text-[12px] text-on-primary-container">© 2024 TECHSPEC IT Solutions. Semua hak dilindungi.</p>
+        <div class="flex gap-md">
+            <img alt="Secure Payment" class="h-6 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjKkM3XwLYkuyyy3GA76lpZE08CgjSdzU1euAukXRdAWD753apsGygYuX4Su-f2P9dorBFBTYsvsEUk1LY1hmwrX93wXoKinJefOhbTJEyKLdWuLy_MOOrwpcHLbAk2hYQGddh8_8MiZzry5sCIXZDqWIiS6mnAO5xCGDVyYEcSAx-IDy8fPtmNdpby2jDTRrTvn0oQVOAWm-BbLmK2Bb9JfkKFHqwZwI-4azOvyIuwcRNEz1EzCmxWbOrS_AV-4R3Y1iLGEZpLW8"/>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Smooth header effect on scroll
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Start progress fill animation on load
+    function animateTracker() {
+        const fill = document.getElementById('progress-fill');
+        setTimeout(() => {
+            fill.style.width = '50%';
+        }, 300);
+    }
+
+    // Est Delivery Countdown timer
+    function startDeliveryCountdown() {
+        let totalSeconds = 1 * 86400 + 5 * 3600 + 38 * 60; // 1d 5h 38m
+
+        const clockEl = document.getElementById('delivery-countdown');
+
+        setInterval(() => {
+            if (totalSeconds > 0) {
+                totalSeconds--;
+                
+                const d = Math.floor(totalSeconds / 86400);
+                const h = Math.floor((totalSeconds % 86400) / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                
+                clockEl.textContent = `${d} Hari ${String(h).padStart(2, '0')} Jam ${String(m).padStart(2, '0')} Menit ${String(s).padStart(2, '0')} Detik`;
+            } else {
+                clockEl.textContent = "Pesanan Anda sedang dikirim!";
+            }
+        }, 1000);
+    }
+
+    // Support Chat Drawer toggle
+    function toggleChatDrawer() {
+        const drawer = document.getElementById('chat-drawer');
+        const isHidden = drawer.classList.contains('hidden');
+        
+        if (isHidden) {
+            drawer.classList.remove('hidden');
+            setTimeout(() => {
+                drawer.classList.remove('opacity-0');
+            }, 10);
+        } else {
+            drawer.classList.add('opacity-0');
+            setTimeout(() => {
+                drawer.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    // Support Chat Send Message mock
+    function sendMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const stream = document.getElementById('chat-stream');
+        
+        // Append user message
+        const userBubble = document.createElement('div');
+        userBubble.className = "flex gap-2 items-start justify-end ml-auto max-w-[85%]";
+        userBubble.innerHTML = `
+            <div class="bg-secondary text-white p-3 rounded-2xl rounded-tr-none shadow-sm">
+                <p class="text-body-sm">${text}</p>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 text-xs border border-outline-variant">
+                <span class="material-symbols-outlined text-sm">person</span>
+            </div>
+        `;
+        stream.appendChild(userBubble);
+        input.value = "";
+        stream.scrollTop = stream.scrollHeight;
+
+        // Mock Bot Response
+        setTimeout(() => {
+            const botBubble = document.createElement('div');
+            botBubble.className = "flex gap-2 items-start max-w-[85%]";
+            botBubble.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-secondary text-white flex items-center justify-center flex-shrink-0 text-xs">
+                    <span class="material-symbols-outlined text-sm">support_agent</span>
+                </div>
+                <div class="bg-white border border-outline-variant/40 p-3 rounded-2xl rounded-tl-none shadow-sm">
+                    <p class="text-body-sm text-on-surface">Pesan Anda "${text}" telah kami terima. Admin sedang merakit hardware Anda dan akan merespon detail Anda secepatnya.</p>
+                </div>
+            `;
+            stream.appendChild(botBubble);
+            stream.scrollTop = stream.scrollHeight;
+        }, 1200);
+    }
+
+    // Button scale effects
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.classList.add('scale-[0.98]'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('scale-[0.98]'));
+        btn.addEventListener('mouseleave', () => btn.classList.remove('scale-[0.98]'));
+    });
+
+    // Toast Manager
+    let toastTimeout;
+    function showToast(title, message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-msg').textContent = message;
+        
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function handleSubscribe(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input').value;
+        showToast("Terima Kasih!", `Pendaftaran untuk ${email} berhasil.`);
+        event.target.reset();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        animateTracker();
+        startDeliveryCountdown();
+    });
+</script>
+</body>
+</html>
