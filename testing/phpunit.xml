@@ -4,7 +4,7 @@
          verbose="true">
     <testsuites>
         <testsuite name="Property">
-            <directory>tests/Property</directory>
+            <directory>unit/Property</directory>
         </testsuite>
     </testsuites>
 </phpunit>

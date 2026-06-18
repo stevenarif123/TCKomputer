@@ -43,6 +43,7 @@
                 <li><a class="text-on-primary-container hover:text-white text-[11px] md:text-body-sm transition-colors flex items-center gap-1.5" href="index.php"><span class="w-1 h-1 bg-secondary rounded-full"></span>Beranda</a></li>
                 <li><a class="text-on-primary-container hover:text-white text-[11px] md:text-body-sm transition-colors flex items-center gap-1.5" href="products.php"><span class="w-1 h-1 bg-secondary rounded-full"></span>Produk</a></li>
                 <li><a class="text-on-primary-container hover:text-white text-[11px] md:text-body-sm transition-colors flex items-center gap-1.5" href="categories.php"><span class="w-1 h-1 bg-secondary rounded-full"></span>Kategori</a></li>
+                <li><a class="text-on-primary-container hover:text-white text-[11px] md:text-body-sm transition-colors flex items-center gap-1.5" href="faq"><span class="w-1 h-1 bg-secondary rounded-full"></span>FAQ</a></li>
             </ul>
         </div>
         <div>
@@ -218,6 +219,6 @@ if (in_array($currentPage, $allowedPages)):
 <?php endif; ?>
 
 <!-- Main JavaScript -->
-<script src="assets/js/main.js"></script>
+<script src="assets/js/main.js?v=2.4"></script>
 </body>
 </html>

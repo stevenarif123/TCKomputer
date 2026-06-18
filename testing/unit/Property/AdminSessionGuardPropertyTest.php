@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/admin-auth.php';
+require_once __DIR__ . '/../../../config/admin-auth.php';
 
 use PHPUnit\Framework\TestCase;
 

@@ -1,0 +1,209 @@
+# Implementation Plan: FAQ Page (Halaman FAQ)
+
+## Overview
+
+This implementation plan converts the FAQ Page design into incremental coding tasks for a PHP native e-commerce project. Tasks are sequenced so each step builds on the previous: database schema and seed data first, then shared helpers, admin CRUD for categories and entries, public FAQ page with accordion and search, navigation integration, styling/JS, and final validation. All code follows existing project patterns (PDO prepared statements, Tailwind CSS storefront, admin.css admin panel, session-based CSRF, include-based layout).
+
+## Tasks
+
+- [x] 1. Create database migration and seed data
+  - [x] 1.1 Create migration file `maintenance/migrate_faq.php`
+    - Create `faq_categories` table with columns: id, name, description, icon, sort_order, is_active, created_at, updated_at (matching design schema exactly)
+    - Create `faqs` table with columns: id, faq_category_id, question, answer, sort_order, is_active, created_at, updated_at
+    - Add foreign key constraint `fk_faqs_category` on `faqs.faq_category_id` referencing `faq_categories.id` with ON DELETE RESTRICT and ON UPDATE CASCADE
+    - Add indexes on `faqs.faq_category_id` and `faqs.sort_order`
+    - Insert seed data: 5 FAQ categories (Pemesanan, Pengiriman, Pembayaran, Produk & Garansi, Akun & Keamanan) and 13 FAQ entries as specified in the design document
+    - Follow the exact pattern of existing migration files (e.g., `maintenance/migrate_promotions_prod.php`)
+    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5_
+
+- [x] 2. Implement shared FAQ helper functions
+  - [x] 2.1 Add `loadFaqData()` function to `config/helpers.php`
+    - Implement the `loadFaqData(PDO $pdo): array` function as specified in the design's Algorithmic Pseudocode section
+    - Fetch active FAQ categories ordered by `sort_order` ASC
+    - Fetch active FAQ entries joined with active categories, ordered by category `sort_order` then FAQ `sort_order`
+    - Group FAQs by category and filter out categories with zero active FAQs
+    - Return indexed array of category arrays, each with a `'faqs'` key
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - [x] 2.2 Add `validateFaqInput()` function to `config/helpers.php`
+    - Implement the `validateFaqInput(PDO $pdo, array $data): array` function as specified in the design
+    - Validate question (required, max 500 chars), answer (required, max 5000 chars), faq_category_id (must exist and be active), sort_order (0–999)
+    - Return array of error message strings (empty if valid)
+    - _Requirements: 5.2, 5.3, 5.4, 5.5, 6.4_
+  - [x] 2.3 Add `validateFaqCategoryInput()` function to `config/helpers.php`
+    - Validate name (required, max 100 chars, unique), description (optional, max 500 chars), icon (optional Material Symbol name), sort_order (0–999)
+    - Return array of error message strings
+    - _Requirements: 9.2, 9.3, 9.4, 9.5_
+  - [x] 2.4 Add `deleteFaqCategory()` function to `config/helpers.php`
+    - Implement the `deleteFaqCategory(PDO $pdo, int $categoryId): array` function as specified in the design
+    - Check category existence, check for associated FAQs, delete only if zero FAQs reference it
+    - Return `['success' => bool, 'message' => string]`
+    - _Requirements: 11.1, 11.2, 11.3_
+  - [x] 2.5 Write property test for FAQ data loading (Property 1)
+    - **Property 1: Public FAQ data loading returns only active entries under active non-empty categories**
+    - Test that for any set of categories/FAQs with arbitrary `is_active` states, `loadFaqData` returns only entries where both the FAQ and category `is_active` are 1, and no empty categories appear
+    - Create test file `testing/unit/Property/FaqDataLoadingPropertyTest.php`
+    - **Validates: Requirements 1.2, 1.5**
+  - [x] 2.6 Write property test for FAQ display ordering (Property 2)
+    - **Property 2: FAQ display ordering follows sort_order ascending**
+    - Test that for any set of categories/FAQs with arbitrary `sort_order` values, categories appear in non-decreasing `sort_order` and FAQs within each category appear in non-decreasing `sort_order`
+    - Create test file `testing/unit/Property/FaqDisplayOrderingPropertyTest.php`
+    - **Validates: Requirements 1.3, 1.4, 4.2**
+  - [x] 2.7 Write property test for FAQ input validation (Property 5)
+    - **Property 5: FAQ input validation enforces field constraints**
+    - Test that `validateFaqInput` accepts input if and only if question is 1–500 chars, answer is 1–5000 chars, category exists and is active, and sort_order is 0–999
+    - Create test file `testing/unit/Property/FaqInputValidationPropertyTest.php`
+    - **Validates: Requirements 5.2, 5.3, 5.4, 5.5, 6.4**
+  - [x] 2.8 Write property test for FAQ category input validation (Property 6)
+    - **Property 6: FAQ category input validation enforces field constraints**
+    - Test that category validation accepts input if and only if name is 1–100 chars and unique, description ≤ 500 chars, icon is valid Material Symbol name, sort_order is 0–999
+    - Create test file `testing/unit/Property/FaqCategoryInputValidationPropertyTest.php`
+    - **Validates: Requirements 9.2, 9.3, 9.4, 9.5**
+  - [x] 2.9 Write property test for category deletion safety (Property 7)
+    - **Property 7: Category deletion safety — categories with FAQs are undeletable**
+    - Test that `deleteFaqCategory` deletes a category if and only if zero FAQs reference it; when count > 0, deletion is rejected and database state is unchanged
+    - Create test file `testing/unit/Property/FaqCategoryDeletionSafetyPropertyTest.php`
+    - **Validates: Requirements 11.1, 11.2**
+
+- [x] 3. Checkpoint — Verify migration and helpers
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 4. Implement admin FAQ category CRUD
+  - [x] 4.1 Create `admin/faq-categories.php` — FAQ category list page
+    - Follow the exact pattern of `admin/categories.php`
+    - Set `$pageTitle = "Kelola Kategori FAQ"` and include `admin-header.php` / `admin-footer.php`
+    - Fetch all FAQ categories ordered by `sort_order` ASC
+    - Display in `admin-table` with columns: #, Nama, Deskripsi, Icon, Urutan, Aktif, Aksi
+    - Provide "Tambah Kategori" button linking to `faq-category-add`
+    - Provide Edit and Hapus action buttons per row
+    - _Requirements: 8.1, 8.2, 8.3_
+  - [x] 4.2 Create `admin/faq-category-add.php` — FAQ category add form
+    - Follow the exact pattern of `admin/banner-add.php`
+    - Form fields: csrf_token (hidden), name (required, max 100), description (optional textarea, max 500), icon (optional text input for Material Symbol name), sort_order (number, 0–999), is_active (checkbox)
+    - On POST: validate CSRF token, call `validateFaqCategoryInput()`, insert on success, redirect to `faq-categories` with flash message
+    - On validation failure: re-display form with errors and preserved data
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 13.1, 13.2_
+  - [x] 4.3 Create `admin/faq-category-edit.php` — FAQ category edit form
+    - Follow the exact pattern of `admin/banner-edit.php` (banner-edit equivalent)
+    - GET: fetch category by ID from query string, redirect with error if not found, pre-populate form
+    - POST: validate CSRF token, call `validateFaqCategoryInput()` (pass current ID for uniqueness check), update on success
+    - Redirect to `faq-categories` with success/error flash message
+    - _Requirements: 10.1, 10.2, 10.3, 13.1, 13.2_
+  - [x] 4.4 Create `admin/faq-category-delete.php` — FAQ category delete handler
+    - Follow the exact pattern of `admin/category-delete.php`
+    - POST only: validate CSRF token, call `deleteFaqCategory()`, redirect to `faq-categories` with result message
+    - Reject if category has associated FAQs (display count in error message)
+    - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 13.1, 13.2_
+
+- [x] 5. Implement admin FAQ entry CRUD
+  - [x] 5.1 Create `admin/faqs.php` — FAQ entry list page
+    - Follow the exact pattern of `admin/banners.php`
+    - Set `$pageTitle = "Kelola FAQ"` and include `admin-header.php` / `admin-footer.php`
+    - Fetch all FAQ entries with category name via LEFT JOIN, ordered by category `sort_order` then FAQ `sort_order`
+    - Display in `admin-table` with columns: #, Pertanyaan, Kategori, Urutan, Aktif, Aksi
+    - Provide "Tambah FAQ" button linking to `faq-add`
+    - Provide "Kelola Kategori FAQ" button linking to `faq-categories`
+    - Provide Edit and Hapus action buttons per row with CSRF-protected delete forms and JS confirm dialog
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 13.1, 13.2, 13.4_
+  - [x] 5.2 Create `admin/faq-add.php` — FAQ entry add form
+    - Follow the exact pattern of `admin/banner-add.php`
+    - Form fields: csrf_token (hidden), question (required textarea, max 500), answer (required textarea, max 5000), faq_category_id (dropdown of active categories), sort_order (number, 0–999), is_active (checkbox)
+    - On POST: validate CSRF token, call `validateFaqInput()`, insert new FAQ on success, redirect to `faqs` with flash message "FAQ berhasil ditambahkan"
+    - On validation failure: re-display form with errors and preserved data
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 13.1, 13.2, 13.3_
+  - [x] 5.3 Create `admin/faq-edit.php` — FAQ entry edit form
+    - Follow the exact pattern of `admin/banner-edit.php`
+    - GET: fetch FAQ by ID from query string, redirect with error if not found, pre-populate form
+    - POST: validate CSRF token, call `validateFaqInput()`, update FAQ on success, redirect to `faqs` with success flash message
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 13.1, 13.2, 13.3_
+  - [x] 5.4 Create `admin/faq-delete.php` — FAQ entry delete handler
+    - Follow the exact pattern of `admin/category-delete.php`
+    - POST only: validate CSRF token, verify FAQ exists, delete FAQ entry, redirect to `faqs` with flash message "FAQ berhasil dihapus"
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 13.1, 13.2_
+
+- [x] 6. Checkpoint — Verify admin CRUD
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 7. Implement public FAQ page
+  - [x] 7.1 Create `faq.php` — public FAQ page
+    - Include `includes/header.php` and `includes/footer.php`
+    - Call `loadFaqData($pdo)` to fetch categorized FAQ data
+    - Render breadcrumb navigation: Beranda > FAQ
+    - Render page title: "Pertanyaan yang Sering Diajukan (FAQ)"
+    - Render search input with search icon and placeholder "Cari pertanyaan..."
+    - Render each category section with Material Symbol icon and category name heading
+    - Render each FAQ as accordion item with question button, chevron icon, and hidden answer div
+    - Render answers using `nl2br(sanitizeOutput($faq['answer']))` to preserve line breaks
+    - Use `sanitizeOutput()` for all dynamic output values
+    - Use Tailwind CSS classes consistent with existing storefront design (matching design document's Example Usage HTML)
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.3, 2.4, 3.1, 13.4, 13.5, 15.1, 15.2, 15.4_
+  - [x] 7.2 Add FAQ accordion toggle JavaScript to `assets/js/main.js`
+    - Implement `toggleFaq(button)` function in `assets/js/main.js`
+    - Toggle visibility of the `.faq-answer` sibling element (add/remove `hidden` class)
+    - Rotate the `.faq-chevron` icon 180° when expanded (toggle a `rotate-180` class)
+    - All answers start collapsed (hidden by default in HTML)
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [x] 7.3 Add FAQ client-side search/filter JavaScript to `assets/js/main.js`
+    - Implement search filter logic in `assets/js/main.js`
+    - Listen on `#faq-search` input for `input` event
+    - Filter `.faq-item` elements by checking if question or answer text contains the search term (case-insensitive)
+    - Hide non-matching FAQ items and hide category sections that have zero visible items
+    - When search input is cleared, restore all FAQ items and category sections
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  - [x] 7.4 Write property test for accordion toggle involution (Property 3)
+    - **Property 3: Accordion toggle is an involution**
+    - Test that for any FAQ item, toggling once flips the state, toggling twice restores the original state
+    - Create test file `testing/unit/Property/FaqAccordionTogglePropertyTest.php`
+    - **Validates: Requirement 2.1**
+  - [x] 7.5 Write property test for search filter (Property 4)
+    - **Property 4: Search filter returns case-insensitive matches and clear restores all**
+    - Test that for any search term, displayed FAQs contain the search term in question or answer (case-insensitive), and clearing restores all entries
+    - Create test file `testing/unit/Property/FaqSearchFilterPropertyTest.php`
+    - **Validates: Requirements 3.2, 3.4**
+  - [x] 7.6 Write property test for output sanitization on FAQ content (Property 8)
+    - **Property 8: Output sanitization prevents XSS**
+    - Test that for any string with HTML special characters, `sanitizeOutput()` escapes all such characters, and `nl2br(sanitizeOutput())` converts newlines while escaping HTML
+    - Create test file `testing/unit/Property/FaqOutputSanitizationPropertyTest.php`
+    - **Validates: Requirements 13.4, 13.5**
+
+- [x] 8. Integrate navigation links
+  - [x] 8.1 Add FAQ link to storefront header navigation in `includes/header.php`
+    - Add a "FAQ" nav link in the header navigation bar alongside existing links (Produk, Kategori, etc.)
+    - Highlight the FAQ link as active when `$current_page === 'faq.php'`
+    - _Requirements: 14.1, 14.4_
+  - [x] 8.2 Add FAQ link to storefront footer navigation in `includes/footer.php`
+    - Add a "FAQ" link in the footer navigation section
+    - _Requirements: 14.2_
+  - [x] 8.3 Add FAQ management links to admin sidebar in `includes/admin-header.php`
+    - Add a "FAQ" nav link in the admin sidebar navigation (with `quiz` or `help` Material Symbol icon)
+    - Highlight as active when on any FAQ admin page (`faqs.php`, `faq-add.php`, `faq-edit.php`, `faq-categories.php`, `faq-category-add.php`, `faq-category-edit.php`)
+    - _Requirements: 14.3_
+
+- [x] 9. Add styling for FAQ accordion
+  - [x] 9.1 Add FAQ-specific CSS styles to `assets/css/style.css` (if needed beyond Tailwind)
+    - Add smooth transition for accordion expand/collapse (if not fully handled by Tailwind utilities)
+    - Add `.rotate-180` utility class for chevron rotation if not provided by Tailwind CDN
+    - Add any additional FAQ-specific styles needed for the accordion animation
+    - _Requirements: 15.1, 15.2_
+  - [x] 9.2 Add FAQ admin table styles to `assets/css/admin.css` (if needed)
+    - Ensure the FAQ admin pages render consistently with other admin pages (banners, categories, shipping areas)
+    - Add any admin-specific styles for FAQ management pages if existing admin.css classes are insufficient
+    - _Requirements: 15.3_
+
+- [x] 10. Final checkpoint — Full validation and regression
+  - Ensure all tests pass, ask the user if questions arise.
+  - Verify public FAQ page loads correctly with seed data
+  - Verify admin CRUD operations for both categories and entries
+  - Verify navigation links are present and highlighted correctly
+  - Verify accordion expand/collapse and search filter functionality
+  - Verify responsive layout on mobile
+  - Verify all output is sanitized through `sanitizeOutput()`
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation
+- Property tests validate universal correctness properties from the design document
+- Unit tests validate specific examples and edge cases
+- All admin pages follow the established patterns in the existing codebase (banners, categories, shipping areas)
+- The implementation uses PHP native with PDO, Tailwind CSS (CDN) for storefront, and admin.css for admin panel

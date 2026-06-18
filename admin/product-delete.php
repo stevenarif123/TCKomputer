@@ -55,6 +55,20 @@ if (!empty($product['image'])) {
     deleteImage($product['image'], $uploadDir);
 }
 
+// Delete associated additional image files if any
+try {
+    $uploadDir = __DIR__ . '/../uploads/products';
+    $stmtAddImages = $pdo->prepare("SELECT image_path FROM product_images WHERE product_id = ?");
+    $stmtAddImages->execute([$productId]);
+    $addImages = $stmtAddImages->fetchAll(PDO::FETCH_COLUMN);
+    
+    foreach ($addImages as $addImg) {
+        deleteImage($addImg, $uploadDir);
+    }
+} catch (PDOException $e) {
+    error_log('Error deleting associated additional images: ' . $e->getMessage());
+}
+
 // Delete product record from database
 try {
     $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");

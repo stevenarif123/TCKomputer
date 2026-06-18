@@ -29,6 +29,12 @@ class VisitDedupPropertyTest extends TestCase
         $pdo = new PDO('sqlite::memory:');
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        
+        // Define SQLite-equivalent NOW() function
+        $pdo->sqliteCreateFunction('NOW', function() {
+            return date('Y-m-d H:i:s');
+        });
+
         $pdo->exec("
             CREATE TABLE page_visits (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,6 +47,7 @@ class VisitDedupPropertyTest extends TestCase
                 created_at   TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ");
+
         return $pdo;
     }
 
@@ -73,9 +80,18 @@ class VisitDedupPropertyTest extends TestCase
      */
     public function recordVisitNeverThrows(): void
     {
+        // Prevent error_log output to stderr/stdout from corrupting PHPUnit process serialization
+        $oldErrorLog = ini_get('error_log');
+        ini_set('error_log', tempnam(sys_get_temp_dir(), 'php_err'));
+
         // Bad PDO that will fail on exec
         $badPdo = new PDO('sqlite::memory:');
         // page_visits table does NOT exist → INSERT will fail
+        
+        // Define SQLite-equivalent NOW() function
+        $badPdo->sqliteCreateFunction('NOW', function() {
+            return date('Y-m-d H:i:s');
+        });
 
         $context = [
             'session_id' => session_id(),
@@ -91,9 +107,11 @@ class VisitDedupPropertyTest extends TestCase
                 // Should return false, not throw
                 $this->assertIsBool($result, "recordVisit must return bool even on error (iter $i)");
             } catch (Throwable $e) {
+                ini_set('error_log', $oldErrorLog);
                 $this->fail("recordVisit must not throw: " . $e->getMessage() . " (iter $i)");
             }
         }
+        ini_set('error_log', $oldErrorLog);
     }
 
     /**

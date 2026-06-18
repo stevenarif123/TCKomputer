@@ -148,6 +148,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageName, $isFeatured, $isActive
             ]);
 
+            $productId = $pdo->lastInsertId();
+
+            // Handle additional images upload
+            if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images']['name'])) {
+                $additionalUploadedCount = 0;
+                $filesCount = count($_FILES['additional_images']['name']);
+                
+                for ($i = 0; $i < $filesCount; $i++) {
+                    if ($_FILES['additional_images']['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                        continue;
+                    }
+                    
+                    // Stop processing if we exceed 5 additional images
+                    if ($additionalUploadedCount >= 5) {
+                        break;
+                    }
+                    
+                    $fileArray = [
+                        'name'     => $_FILES['additional_images']['name'][$i],
+                        'type'     => $_FILES['additional_images']['type'][$i],
+                        'tmp_name' => $_FILES['additional_images']['tmp_name'][$i],
+                        'error'    => $_FILES['additional_images']['error'][$i],
+                        'size'     => $_FILES['additional_images']['size'][$i]
+                    ];
+                    
+                    $uploadError = '';
+                    $uploadedFilename = uploadImage($fileArray, __DIR__ . '/../uploads/products/', $uploadError);
+                    
+                    if ($uploadedFilename !== false) {
+                        $stmtImg = $pdo->prepare("INSERT INTO product_images (product_id, image_path, sort_order) VALUES (?, ?, ?)");
+                        $stmtImg->execute([$productId, $uploadedFilename, $additionalUploadedCount]);
+                        $additionalUploadedCount++;
+                    } else {
+                        // Log warning but don't fail product creation
+                        error_log("Failed to upload additional image: " . $uploadError);
+                    }
+                }
+            }
+
             redirect('products', 'Produk berhasil ditambahkan');
         } catch (PDOException $e) {
             error_log('Error adding product: ' . $e->getMessage());
@@ -318,10 +357,16 @@ require_once __DIR__ . '/../includes/admin-header.php';
         </div>
 
         <div class="form-group">
-            <label for="image">Gambar Produk</label>
+            <label for="image">Gambar Utama Produk</label>
             <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
                    data-crop="true" data-aspect-ratio="1" data-width="800" data-height="800">
             <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB. Rekomendasi ukuran: 800 x 800 piksel (rasio 1:1).</small>
+        </div>
+
+        <div class="form-group">
+            <label for="additional_images">Gambar Tambahan Produk (Bisa pilih banyak sekaligus, maks 5 gambar)</label>
+            <input type="file" id="additional_images" name="additional_images[]" accept="image/jpeg,image/png,image/webp" multiple>
+            <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB per gambar. Foto ini akan menjadi galeri pendukung detail produk.</small>
         </div>
 
         <div class="form-row">

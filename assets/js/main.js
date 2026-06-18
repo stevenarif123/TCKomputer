@@ -109,6 +109,50 @@
         }
     }
 
+    /**
+     * FAQ Client-Side Search and Filter
+     * Filters FAQ items and categories based on search input value.
+     * Requirements: 3.1, 3.2, 3.3, 3.4
+     */
+    function initFaqSearch() {
+        var searchInput = document.getElementById('faq-search');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function (e) {
+            var searchVal = e.target.value.toLowerCase().trim();
+            var faqItems = document.querySelectorAll('.faq-item');
+            var categories = document.querySelectorAll('.faq-category-section');
+
+            // 1. Loop through all .faq-item elements.
+            for (var i = 0; i < faqItems.length; i++) {
+                var item = faqItems[i];
+                var questionEl = item.querySelector('button span');
+                var answerEl = item.querySelector('.faq-answer');
+                
+                var questionText = questionEl ? questionEl.textContent.toLowerCase() : '';
+                var answerText = answerEl ? answerEl.textContent.toLowerCase() : '';
+
+                if (searchVal === '' || questionText.indexOf(searchVal) !== -1 || answerText.indexOf(searchVal) !== -1) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            }
+
+            // 2. Loop through all .faq-category-section elements.
+            for (var j = 0; j < categories.length; j++) {
+                var cat = categories[j];
+                var activeItems = cat.querySelectorAll('.faq-item:not(.hidden)');
+
+                if (searchVal === '' || activeItems.length > 0) {
+                    cat.classList.remove('hidden');
+                } else {
+                    cat.classList.add('hidden');
+                }
+            }
+        });
+    }
+
     // Initialize all components when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -120,5 +164,29 @@
         initHamburgerMenu();
         initFlashMessages();
         initCartQuantityButtons();
+        initFaqSearch();
     }
 })();
+
+/**
+ * FAQ Accordion Toggle
+ * Toggles the visibility of the corresponding answer and rotates the chevron.
+ * Accessible globally via onclick="toggleFaq(this)".
+ * Requirements: 2.1, 2.2, 2.3
+ */
+window.toggleFaq = function (button) {
+    if (!button) return;
+
+    // Find the corresponding answer element (which is the next sibling element in the DOM)
+    var faqAnswer = button.nextElementSibling;
+    if (faqAnswer && faqAnswer.classList.contains('faq-answer')) {
+        faqAnswer.classList.toggle('hidden');
+    }
+
+    // Find the chevron icon inside the button and rotate it
+    var faqChevron = button.querySelector('.faq-chevron');
+    if (faqChevron) {
+        faqChevron.classList.toggle('rotate-180');
+    }
+};
+

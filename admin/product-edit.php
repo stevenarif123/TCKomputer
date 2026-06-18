@@ -155,6 +155,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageName, $isFeatured, $isActive, $productId
             ]);
 
+            // 1. Handle additional image deletions
+            if (isset($_POST['delete_images']) && is_array($_POST['delete_images'])) {
+                $uploadDir = __DIR__ . '/../uploads/products';
+                foreach ($_POST['delete_images'] as $delImgId) {
+                    $delImgId = (int)$delImgId;
+                    
+                    // Fetch to get filename
+                    $stmtFetchImg = $pdo->prepare("SELECT image_path FROM product_images WHERE id = ? AND product_id = ?");
+                    $stmtFetchImg->execute([$delImgId, $productId]);
+                    $imgFilename = $stmtFetchImg->fetchColumn();
+                    
+                    if ($imgFilename) {
+                        deleteImage($imgFilename, $uploadDir);
+                        
+                        // Delete from database
+                        $stmtDelDb = $pdo->prepare("DELETE FROM product_images WHERE id = ?");
+                        $stmtDelDb->execute([$delImgId]);
+                    }
+                }
+            }
+
+            // 2. Handle additional images upload
+            if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images']['name'])) {
+                // Count current additional images
+                $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM product_images WHERE product_id = ?");
+                $stmtCount->execute([$productId]);
+                $existingCount = (int)$stmtCount->fetchColumn();
+                
+                $additionalUploadedCount = $existingCount;
+                $filesCount = count($_FILES['additional_images']['name']);
+                
+                for ($i = 0; $i < $filesCount; $i++) {
+                    if ($_FILES['additional_images']['error'][$i] === UPLOAD_ERR_NO_FILE) {
+                        continue;
+                    }
+                    
+                    // Stop processing if we exceed 5 additional images total
+                    if ($additionalUploadedCount >= 5) {
+                        break;
+                    }
+                    
+                    $fileArray = [
+                        'name'     => $_FILES['additional_images']['name'][$i],
+                        'type'     => $_FILES['additional_images']['type'][$i],
+                        'tmp_name' => $_FILES['additional_images']['tmp_name'][$i],
+                        'error'    => $_FILES['additional_images']['error'][$i],
+                        'size'     => $_FILES['additional_images']['size'][$i]
+                    ];
+                    
+                    $uploadError = '';
+                    $uploadedFilename = uploadImage($fileArray, __DIR__ . '/../uploads/products/', $uploadError);
+                    
+                    if ($uploadedFilename !== false) {
+                        $stmtImgInsert = $pdo->prepare("INSERT INTO product_images (product_id, image_path, sort_order) VALUES (?, ?, ?)");
+                        $stmtImgInsert->execute([$productId, $uploadedFilename, $additionalUploadedCount]);
+                        $additionalUploadedCount++;
+                    } else {
+                        error_log("Failed to upload additional image during edit: " . $uploadError);
+                    }
+                }
+            }
+
             redirect('products', 'Produk berhasil diperbarui', 'success');
         } catch (PDOException $e) {
             error_log('Error updating product: ' . $e->getMessage());
@@ -181,6 +243,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product['warranty_note'] = $warrantyNote;
     $product['is_featured'] = $isFeatured;
     $product['is_active'] = $isActive;
+}
+
+// Fetch additional images for form display (fetched after any updates)
+try {
+    $stmtImg = $pdo->prepare("SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order ASC");
+    $stmtImg->execute([$productId]);
+    $additionalImages = $stmtImg->fetchAll();
+} catch (PDOException $e) {
+    error_log('Error fetching additional images: ' . $e->getMessage());
+    $additionalImages = [];
 }
 
 $pageTitle = "Edit Produk";
@@ -329,17 +401,41 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 
     <div class="form-group">
-        <label for="image">Gambar Produk</label>
+        <label for="image">Gambar Utama Produk</label>
         <?php if (!empty($product['image'])): ?>
-            <div class="current-image">
-                <img src="/uploads/products/<?= sanitizeOutput($product['image']) ?>"
-                     alt="Current product image" class="image-thumbnail">
-                <p class="image-note">Gambar saat ini. Upload gambar baru untuk mengganti.</p>
+            <div class="current-image" style="margin-bottom: 8px;">
+                <img src="../uploads/products/<?= sanitizeOutput($product['image']) ?>"
+                     alt="Current product image" class="image-thumbnail" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                <p class="image-note" style="font-size: 13px; color: #666; margin-top: 4px;">Gambar saat ini. Upload gambar baru untuk mengganti.</p>
             </div>
         <?php endif; ?>
         <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
                data-crop="true" data-aspect-ratio="1" data-width="800" data-height="800">
         <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB. Rekomendasi ukuran: 800 x 800 piksel (rasio 1:1).</small>
+    </div>
+
+    <div class="form-group">
+        <label>Foto Tambahan Saat Ini</label>
+        <?php if (!empty($additionalImages)): ?>
+            <div class="additional-images-grid" style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; margin-bottom: 12px;">
+                <?php foreach ($additionalImages as $img): ?>
+                    <div class="additional-image-item" style="border: 1px solid #ddd; padding: 8px; border-radius: 8px; text-align: center; background: #fafafa; position: relative;">
+                        <img src="../uploads/products/<?= sanitizeOutput($img['image_path']) ?>" alt="Additional photo" class="image-thumbnail" style="width: 100px; height: 100px; object-fit: cover; display: block; margin-bottom: 8px; border-radius: 6px;">
+                        <label style="color: #d9534f; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" name="delete_images[]" value="<?= (int)$img['id'] ?>"> Hapus
+                        </label>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="image-note" style="font-size: 13px; color: #666; margin-top: 4px; margin-bottom: 12px;">Tidak ada foto tambahan.</p>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <label for="additional_images">Tambah Foto Tambahan (Bisa pilih banyak sekaligus, maks total 5 foto tambahan)</label>
+        <input type="file" id="additional_images" name="additional_images[]" accept="image/jpeg,image/png,image/webp" multiple>
+        <small class="form-help">Format: JPG, PNG, WebP. Maksimal 2MB per gambar. Upload berkas baru untuk menambah foto di galeri produk.</small>
     </div>
 
     <div class="form-row">

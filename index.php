@@ -13,8 +13,8 @@ $csrfToken = generateCSRFToken();
 $stmtBanners = $pdo->query("SELECT * FROM banners WHERE is_active=1 ORDER BY sort_order ASC");
 $banners = $stmtBanners->fetchAll();
 
-// Fetch active categories ordered by sort_order
-$stmtCategories = $pdo->query("SELECT * FROM categories WHERE is_active=1 ORDER BY sort_order ASC");
+// Fetch active categories ordered by sort_order (compact initial render for homepage top section)
+$stmtCategories = $pdo->query("SELECT * FROM categories WHERE is_active=1 ORDER BY sort_order ASC LIMIT 8");
 $categories = $stmtCategories->fetchAll();
 
 // Fetch featured products (is_featured=1, is_active=1, limit 8, newest first)
@@ -107,7 +107,7 @@ $bannerStyles = [
 ];
 ?>
 
-<div class="space-y-3 md:space-y-6 py-1.5 md:py-4 animate-fade-in-up">
+<div class="py-2 animate-fade-in-up">
     <!-- Running Ticker / Info Promo Teks Berjalan -->
     <?php if (!empty($storeSettings['running_ticker'])): ?>
     <div class="max-w-max-width mx-auto px-4 md:px-margin-desktop">
@@ -123,7 +123,7 @@ $bannerStyles = [
     <?php endif; ?>
 
     <!-- Immersive Premium Hero Section with Slider -->
-    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop hidden md:block">
+    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop hidden md:block my-2 md:my-3">
         <div class="relative w-full rounded-none overflow-hidden bg-transparent" style="aspect-ratio: 1200 / 380;">
 
             <!-- Slides Wrapper -->
@@ -148,7 +148,7 @@ $bannerStyles = [
                 </button>
 
                 <!-- Indicators (Dots) -->
-                <div class="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 md:gap-2 z-30">
+                <div class="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
                     <?php foreach ($slides as $index => $slide): ?>
                         <button class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 <?= $index === 0 ? 'bg-secondary scale-125' : 'bg-slate-400/50 hover:bg-slate-400/80' ?>" onclick="goToSlide(<?= $index ?>, event)" data-indicator-index="<?= $index ?>" aria-label="Go to slide <?= $index + 1 ?>"></button>
                     <?php endforeach; ?>
@@ -159,7 +159,7 @@ $bannerStyles = [
 
     <!-- Promo Banners Grid -->
     <?php if (!empty($promoBanners)): ?>
-    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop hidden md:block">
+    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop hidden md:block my-2 md:my-3">
         <div class="grid grid-cols-1 md:grid-cols-<?= count($promoBanners) ?> gap-4">
             <?php foreach ($promoBanners as $pb): ?>
             <?php 
@@ -184,10 +184,9 @@ $bannerStyles = [
 
     <!-- Categories Section (Fixed Icon Mapping & Centered Layout) -->
     <?php if (!empty($categories)): ?>
-    <section id="categories" class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-1.5 md:py-2 animate-fade-in-up">
-        <div class="bg-transparent md:bg-white md:rounded-xl p-0 md:p-8 md:border md:border-gray-200">
-            <h2 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 block md:text-on-background md:text-xl md:text-2xl md:font-extrabold md:text-center md:mb-8">Kategori Pilihan</h2>
-            <div class="flex overflow-x-auto hide-scrollbar gap-3 md:gap-8 md:flex-wrap md:items-center md:justify-center">
+    <section id="categories" class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2 md:py-3 animate-fade-in-up">
+        <div class="w-full flex flex-col md:items-center">
+            <div class="flex flex-nowrap overflow-x-auto hide-scrollbar border border-secondary/20 rounded-xl bg-white divide-x divide-secondary/20 w-full shadow-sm">
                 <?php foreach ($categories as $category): ?>
                 <?php
                     // Dynamic Material Symbol mapping based on category slug/name
@@ -209,24 +208,23 @@ $bannerStyles = [
                         $catIcon = 'handyman';
                     }
                 ?>
-                <a class="flex flex-col items-center gap-1.5 group transition-all duration-350 w-14 md:w-24 shrink-0" href="category?slug=<?= sanitizeOutput($category['slug']) ?>">
-                    <div class="w-10 h-10 md:w-14 md:h-14 bg-white border border-gray-100 shadow-sm md:border-0 md:shadow-none md:bg-surface-container flex items-center justify-center rounded-full group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
-                        <?php
-                        $imageVal = $category['image'] ?? '';
-                        $isUrl = (stripos($imageVal, 'http://') === 0 || stripos($imageVal, 'https://') === 0 || stripos($imageVal, '/') === 0);
-                        $isFile = (!empty($imageVal) && !$isUrl && preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $imageVal) && file_exists('uploads/categories/' . $imageVal));
-                        
-                        if ($isFile): ?>
-                            <img src="uploads/categories/<?= sanitizeOutput($imageVal) ?>" alt="<?= sanitizeOutput($category['name']) ?>" class="w-6 h-6 md:w-7 md:h-7 object-contain group-hover:brightness-0 group-hover:invert transition-all">
-                        <?php elseif ($isUrl): ?>
-                            <img src="<?= sanitizeOutput($imageVal) ?>" alt="<?= sanitizeOutput($category['name']) ?>" class="w-6 h-6 md:w-7 md:h-7 object-contain group-hover:brightness-0 group-hover:invert transition-all">
-                        <?php elseif (!empty($imageVal) && !$isUrl && !$isFile): // Material Symbol ?>
-                            <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:text-white transition-colors"><?= sanitizeOutput($imageVal) ?></span>
-                        <?php else: // Slug-based dynamic fallback icon ?>
-                            <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:text-white transition-colors"><?= $catIcon ?></span>
-                        <?php endif; ?>
-                    </div>
-                    <span class="text-[10px] md:text-[12px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-300 leading-tight w-full break-words">
+                <a class="flex-shrink-0 min-w-[80px] flex-1 py-3 md:py-4 flex flex-col items-center justify-center gap-1.5 group transition-all duration-200 hover:bg-secondary/[0.04]" href="category?slug=<?= sanitizeOutput($category['slug']) ?>">
+                    <?php
+                    $imageVal = $category['image'] ?? '';
+                    $isUrl = (stripos($imageVal, 'http://') === 0 || stripos($imageVal, 'https://') === 0 || stripos($imageVal, '/') === 0);
+                    $isFile = (!empty($imageVal) && !$isUrl && preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $imageVal) && file_exists('uploads/categories/' . $imageVal));
+                    
+                    if ($isFile): ?>
+                        <img src="uploads/categories/<?= sanitizeOutput($imageVal) ?>" alt="<?= sanitizeOutput($category['name']) ?>" class="w-6 h-6 md:w-7 md:h-7 object-contain group-hover:scale-110 transition-transform duration-200">
+                    <?php elseif ($isUrl): ?>
+                        <img src="<?= sanitizeOutput($imageVal) ?>" alt="<?= sanitizeOutput($category['name']) ?>" class="w-6 h-6 md:w-7 md:h-7 object-contain group-hover:scale-110 transition-transform duration-200">
+                    <?php elseif (!empty($imageVal) && !$isUrl && !$isFile): // Material Symbol ?>
+                        <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:scale-110 transition-transform duration-200"><?= sanitizeOutput($imageVal) ?></span>
+                    <?php else: // Slug-based dynamic fallback icon ?>
+                        <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:scale-110 transition-transform duration-200"><?= $catIcon ?></span>
+                    <?php endif; ?>
+                    
+                    <span class="text-[9px] md:text-[10px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-200 leading-tight w-full break-words line-clamp-2 px-1">
                         <?= sanitizeOutput($category['name']) ?>
                     </span>
                 </a>
@@ -348,7 +346,7 @@ $bannerStyles = [
     <!-- Featured Products Section -->
     <?php if (!empty($featuredProducts)): ?>
     <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2">
-        <div class="flex items-end justify-between mb-6">
+        <div class="flex items-end justify-between mb-3 md:mb-4">
             <div>
                 <h2 class="text-xl md:text-2xl font-extrabold text-on-background leading-tight">Produk Unggulan</h2>
                 <p class="text-xs md:text-sm text-on-surface-variant mt-1">Koleksi hardware & aksesoris pilihan terbaik</p>
@@ -435,7 +433,7 @@ $bannerStyles = [
     <!-- Newest Products Section -->
     <?php if (!empty($newestProducts)): ?>
     <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2">
-        <div class="flex items-end justify-between mb-6">
+        <div class="flex items-end justify-between mb-3 md:mb-4">
             <div>
                 <h2 class="text-xl md:text-2xl font-extrabold text-on-background leading-tight">Produk Terbaru</h2>
                 <p class="text-xs md:text-sm text-on-surface-variant mt-1">Temukan hardware & peripheral rilis paling anyar</p>

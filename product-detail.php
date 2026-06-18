@@ -49,10 +49,26 @@ if (!$product) {
 // Generate CSRF token
 $csrfToken = generateCSRFToken();
 
-// Determine product image
-$productImage = !empty($product['image']) 
-    ? 'uploads/products/' . sanitizeOutput($product['image']) 
-    : 'uploads/products/placeholder.png';
+// Determine product image and fetch additional images for gallery
+$stmtImages = $pdo->prepare("SELECT image_path FROM product_images WHERE product_id = ? ORDER BY sort_order ASC");
+$stmtImages->execute([$product['id']]);
+$additionalImages = $stmtImages->fetchAll(PDO::FETCH_COLUMN);
+
+// Build list of all images (main image + additional images)
+$allImages = [];
+if (!empty($product['image'])) {
+    $allImages[] = 'uploads/products/' . sanitizeOutput($product['image']);
+} else {
+    $allImages[] = 'uploads/products/placeholder.png';
+}
+
+foreach ($additionalImages as $addImg) {
+    if (!empty($addImg)) {
+        $allImages[] = 'uploads/products/' . sanitizeOutput($addImg);
+    }
+}
+
+$productImage = $allImages[0];
 
 // Fetch active shipping areas for calculator
 $stmtAreas = $pdo->query("SELECT area_name, regency, cost FROM shipping_areas WHERE is_active = 1 ORDER BY area_name ASC");
@@ -155,6 +171,17 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
             <div onclick="openLightbox()" class="zoom-container aspect-square bg-white rounded-xl border border-gray-200 overflow-hidden flex items-center justify-center relative group cursor-zoom-in transition-all duration-200">
                 <!-- Sharp Foreground Image -->
                 <img id="main-product-image" alt="<?= sanitizeOutput($product['name']) ?>" class="zoom-image max-w-[90%] max-h-[90%] object-contain z-10 transition-transform duration-300 relative" src="<?= $productImage ?>"/>
+                
+                <!-- Slider Arrows for Main Preview -->
+                <?php if (count($allImages) > 1): ?>
+                    <button onclick="navigateMainImage(-1, event)" class="absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-on-surface hover:text-secondary w-10 h-10 rounded-full flex items-center justify-center border border-gray-200/50 shadow-md backdrop-blur-sm transition-all duration-200 opacity-90 md:opacity-0 md:group-hover:opacity-100 z-30 pointer-events-auto cursor-pointer" aria-label="Gambar Sebelumnya">
+                        <span class="material-symbols-outlined font-bold">chevron_left</span>
+                    </button>
+                    <button onclick="navigateMainImage(1, event)" class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-on-surface hover:text-secondary w-10 h-10 rounded-full flex items-center justify-center border border-gray-200/50 shadow-md backdrop-blur-sm transition-all duration-200 opacity-90 md:opacity-0 md:group-hover:opacity-100 z-30 pointer-events-auto cursor-pointer" aria-label="Gambar Berikutnya">
+                        <span class="material-symbols-outlined font-bold">chevron_right</span>
+                    </button>
+                <?php endif; ?>
+
                 <!-- Hover Lens Indicator overlay -->
                 <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-center justify-center z-20">
                     <span class="bg-white/95 text-secondary p-3 rounded-full border border-gray-200 flex items-center justify-center">
@@ -164,10 +191,12 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
             </div>
             
             <!-- Gallery Thumbnails -->
-            <div class="flex gap-2">
-                <button onclick="setProductImage(this, '<?= $productImage ?>')" class="gallery-thumb w-16 h-16 bg-white rounded-lg border-2 border-secondary overflow-hidden p-1 transition-colors">
-                    <img alt="Thumbnail" class="w-full h-full object-cover rounded-md" src="<?= $productImage ?>"/>
-                </button>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach ($allImages as $idx => $imgUrl): ?>
+                    <button onclick="setProductImage(this, '<?= $imgUrl ?>')" class="gallery-thumb w-16 h-16 bg-white rounded-lg <?= $idx === 0 ? 'border-2 border-secondary' : 'border border-outline-variant/60' ?> overflow-hidden p-1 transition-colors">
+                        <img alt="Thumbnail <?= $idx + 1 ?>" class="w-full h-full object-cover rounded-md" src="<?= $imgUrl ?>"/>
+                    </button>
+                <?php endforeach; ?>
             </div>
         </section>
         
@@ -391,11 +420,25 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
 </div>
 
 <!-- Lightbox Modal Overlay UI -->
-<div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-md hidden opacity-0" onclick="closeLightbox()">
-    <button class="absolute top-6 right-6 text-white hover:text-outline-variant flex items-center justify-center w-12 h-12 bg-white/10 rounded-full backdrop-blur-md active:scale-95 transition-transform" onclick="closeLightbox(event)">
+<div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 md:p-8 hidden opacity-0" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white hover:text-outline-variant flex items-center justify-center w-12 h-12 bg-white/10 rounded-full backdrop-blur-md active:scale-95 transition-transform z-50" onclick="closeLightbox(event)">
         <span class="material-symbols-outlined text-2xl">close</span>
     </button>
-    <img id="lightbox-image" class="max-w-full max-h-[80vh] object-contain rounded-xl select-none" src="" onclick="event.stopPropagation()"/>
+    
+    <!-- Lightbox Content Wrapper (Relative to wrap image and navigation close next to it) -->
+    <div class="relative max-w-full max-h-[85vh] flex items-center justify-center px-12 md:px-16" onclick="event.stopPropagation()">
+        <!-- Lightbox Navigation Arrows -->
+        <?php if (count($allImages) > 1): ?>
+            <button onclick="navigateLightbox(-1, event)" class="absolute left-0 text-white hover:text-secondary flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full backdrop-blur-md active:scale-95 transition-all cursor-pointer z-50" aria-label="Gambar Sebelumnya">
+                <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_left</span>
+            </button>
+            <button onclick="navigateLightbox(1, event)" class="absolute right-0 text-white hover:text-secondary flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full backdrop-blur-md active:scale-95 transition-all cursor-pointer z-50" aria-label="Gambar Berikutnya">
+                <span class="material-symbols-outlined text-2xl md:text-3xl">chevron_right</span>
+            </button>
+        <?php endif; ?>
+
+        <img id="lightbox-image" class="max-w-full max-h-[80vh] object-contain rounded-xl select-none" src="" />
+    </div>
 </div>
 
 <script>
@@ -403,37 +446,52 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
     let currentPrice = <?= (int)$activePrice ?>;
     let qty = 1;
     let maxQty = <?= $product['status'] === 'ready' ? (int)$product['stock'] : 999 ?>;
+    
+    // Gallery state variables
+    const productImages = <?= json_encode($allImages) ?>;
+    let currentImageIndex = 0;
 
     // Gallery switching with visual borders
     function setProductImage(buttonEl, url) {
+        // Find index of image URL in array
+        const index = productImages.indexOf(url);
+        if (index !== -1) {
+            currentImageIndex = index;
+        }
+
         document.querySelectorAll('.gallery-thumb').forEach(btn => {
             btn.classList.remove('border-secondary', 'border-2');
             btn.classList.add('border-outline-variant/60', 'border');
         });
-        buttonEl.classList.remove('border-outline-variant/60', 'border');
-        buttonEl.classList.add('border-secondary', 'border-2');
+        
+        if (buttonEl) {
+            buttonEl.classList.remove('border-outline-variant/60', 'border');
+            buttonEl.classList.add('border-secondary', 'border-2');
+        } else {
+            // Highlight thumbnail programmatically
+            const thumbs = document.querySelectorAll('.gallery-thumb');
+            if (thumbs[currentImageIndex]) {
+                thumbs[currentImageIndex].classList.remove('border-outline-variant/60', 'border');
+                thumbs[currentImageIndex].classList.add('border-secondary', 'border-2');
+            }
+        }
         
         document.getElementById('main-product-image').src = url;
     }
 
-    // Zoom-in effect on hover inside main gallery container
-    const zoomContainer = document.querySelector('.zoom-container');
-    const zoomImage = document.getElementById('main-product-image');
-
-    if (zoomContainer && zoomImage) {
-        zoomContainer.addEventListener('mousemove', (e) => {
-            const rect = zoomContainer.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            
-            zoomImage.style.transformOrigin = `${x}% ${y}%`;
-            zoomImage.style.transform = 'scale(1.5)';
-        });
-
-        zoomContainer.addEventListener('mouseleave', () => {
-            zoomImage.style.transform = 'scale(1)';
-            zoomImage.style.transformOrigin = 'center center';
-        });
+    // Navigate main preview image via arrows
+    function navigateMainImage(direction, event) {
+        if (event) event.stopPropagation(); // Prevent opening lightbox
+        
+        currentImageIndex += direction;
+        if (currentImageIndex < 0) {
+            currentImageIndex = productImages.length - 1;
+        } else if (currentImageIndex >= productImages.length) {
+            currentImageIndex = 0;
+        }
+        
+        const nextUrl = productImages[currentImageIndex];
+        setProductImage(null, nextUrl);
     }
 
     // Lightbox modal functions
@@ -442,12 +500,49 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
         const mainImg = document.getElementById('main-product-image');
         const lbImg = document.getElementById('lightbox-image');
         
+        // Sync current index
+        const currentSrc = mainImg.getAttribute('src');
+        const index = productImages.indexOf(currentSrc);
+        if (index !== -1) {
+            currentImageIndex = index;
+        }
+        
         lbImg.src = mainImg.src;
         lightbox.classList.remove('hidden');
         setTimeout(() => {
             lightbox.style.opacity = '1';
         }, 10);
     }
+
+    // Navigate lightbox preview via arrows
+    function navigateLightbox(direction, event) {
+        if (event) event.stopPropagation(); // Prevent closing lightbox
+        
+        currentImageIndex += direction;
+        if (currentImageIndex < 0) {
+            currentImageIndex = productImages.length - 1;
+        } else if (currentImageIndex >= productImages.length) {
+            currentImageIndex = 0;
+        }
+        
+        const nextUrl = productImages[currentImageIndex];
+        setProductImage(null, nextUrl);
+        document.getElementById('lightbox-image').src = nextUrl;
+    }
+
+    // Keyboard navigation for lightbox
+    document.addEventListener('keydown', (e) => {
+        const lightbox = document.getElementById('lightbox-modal');
+        if (lightbox && !lightbox.classList.contains('hidden')) {
+            if (e.key === 'ArrowRight' || e.key === 'Right') {
+                navigateLightbox(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'Left') {
+                navigateLightbox(-1);
+            } else if (e.key === 'Escape' || e.key === 'Esc') {
+                closeLightbox();
+            }
+        }
+    });
 
     // Close lightbox modal
     function closeLightbox(event) {

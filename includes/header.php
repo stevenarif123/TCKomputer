@@ -367,6 +367,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a class="<?= ($current_page === 'index.php') ? 'text-secondary font-bold active' : 'text-on-surface-variant font-medium' ?> pb-1 text-label-md font-label-md nav-link transition-all duration-200" href="index">Beranda</a>
                 <a class="<?= ($current_page === 'products.php' || $current_page === 'product-detail.php') ? 'text-secondary font-bold active' : 'text-on-surface-variant font-medium' ?> pb-1 text-label-md font-label-md nav-link transition-all duration-200" href="products">Produk</a>
                 <a class="<?= ($current_page === 'categories.php' || $current_page === 'category.php') ? 'text-secondary font-bold active' : 'text-on-surface-variant font-medium' ?> pb-1 text-label-md font-label-md nav-link transition-all duration-200" href="categories">Kategori</a>
+                <a class="<?= ($current_page === 'faq.php') ? 'text-secondary font-bold active' : 'text-on-surface-variant font-medium' ?> pb-1 text-label-md font-label-md nav-link transition-all duration-200" href="faq">FAQ</a>
             </div>
         </div>
         
@@ -489,6 +490,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a class="block py-2 px-3 rounded-lg <?= ($current_page === 'index.php') ? 'bg-secondary/10 text-secondary font-bold' : 'text-on-surface-variant font-medium' ?>" href="index">Beranda</a>
         <a class="block py-2 px-3 rounded-lg <?= ($current_page === 'products.php' || $current_page === 'product-detail.php') ? 'bg-secondary/10 text-secondary font-bold' : 'text-on-surface-variant font-medium' ?>" href="products">Produk</a>
         <a class="block py-2 px-3 rounded-lg <?= ($current_page === 'categories.php' || $current_page === 'category.php') ? 'bg-secondary/10 text-secondary font-bold' : 'text-on-surface-variant font-medium' ?>" href="categories">Kategori</a>
+        <a class="block py-2 px-3 rounded-lg <?= ($current_page === 'faq.php') ? 'bg-secondary/10 text-secondary font-bold' : 'text-on-surface-variant font-medium' ?>" href="faq">FAQ</a>
         
         <hr class="border-outline-variant/30 my-1">
         <?php if ($profile || !empty($_SESSION['my_orders'])): ?>
