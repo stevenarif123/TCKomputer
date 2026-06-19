@@ -114,6 +114,11 @@ if (count($relatedProducts) < 4) {
 // Define promo status and active price (only active if global flash sale is running)
 $isPromo = $isGlobalFlashSaleActive && !empty($product['promo_active']) && !empty($product['promo_price']) && $product['promo_price'] > 0 && isset($product['promo_stock']) && $product['promo_stock'] > 0;
 $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_price'];
+
+// Compute state for marketplace UX components
+$parsedSpec = parseSpecification($product['specification'] ?? '');
+$savingsAmount = $isPromo ? max(0, (int)$product['selling_price'] - (int)$product['promo_price']) : 0;
+$discountPercentage = $isPromo ? round((($product['selling_price'] - $product['promo_price']) / $product['selling_price']) * 100) : 0;
 ?>
 
 <style>
@@ -151,7 +156,7 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
     }
 </style>
 
-<div class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-3 md:py-lg animate-fade-in-up">
+<div class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-3 md:py-lg animate-fade-in-up pb-24 lg:pb-lg">
     <!-- Breadcrumbs -->
     <nav class="flex items-center gap-xs text-body-sm text-on-surface-variant mb-3 md:mb-lg">
         <a class="hover:text-secondary transition-colors" href="index">Beranda</a>
@@ -215,9 +220,7 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
             
             <!-- Price Section -->
             <div class="space-y-3">
-                <?php if ($isPromo): 
-                    $discountPercentage = round((($product['selling_price'] - $product['promo_price']) / $product['selling_price']) * 100);
-                ?>
+                <?php if ($isPromo): ?>
                     <!-- Premium Flash Sale Ticking Banner -->
                     <div class="bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl p-3 flex justify-between items-center shadow-sm select-none">
                         <div class="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
@@ -235,6 +238,9 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
                         <p class="text-2xl font-black text-red-600 leading-none tracking-tight"><?= formatRupiah($activePrice) ?></p>
                         <p class="text-xs font-semibold text-on-surface-variant/60 line-through"><?= formatRupiah((int)$product['selling_price']) ?></p>
                         <span class="px-2 py-0.5 bg-red-100 text-red-600 rounded text-xs font-black">-<?= $discountPercentage ?>%</span>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-black">
+                            Hemat <?= formatRupiah($savingsAmount) ?>
+                        </span>
                     </div>
                 <?php else: ?>
                     <div class="flex items-baseline gap-2">
@@ -243,6 +249,48 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
                 <?php endif; ?>
             </div>
             
+            <!-- Trust Badge Strip -->
+            <div id="trust-badge-strip" class="flex flex-wrap gap-2 text-[10px] font-bold text-on-surface-variant my-2 lg:my-3">
+                <div class="flex items-center gap-1 bg-green-50 text-green-700 px-2.5 py-1.5 rounded-full border border-green-100 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[14px]">verified_user</span>
+                    <span>100% Ori &amp; Garansi Resmi</span>
+                </div>
+                <div class="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-full border border-blue-100 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[14px]">inventory_2</span>
+                    <span>Packing Aman</span>
+                </div>
+                <div class="flex items-center gap-1 bg-purple-50 text-purple-700 px-2.5 py-1.5 rounded-full border border-purple-100 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[14px]">support_agent</span>
+                    <span>Bisa Konsultasi</span>
+                </div>
+                <div class="flex items-center gap-1 bg-orange-50 text-orange-700 px-2.5 py-1.5 rounded-full border border-orange-100 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                    <span>Pengiriman Terpercaya</span>
+                </div>
+            </div>
+
+            <!-- Quick Benefit Summary -->
+            <div id="quick-benefit-summary" class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 text-[11px] font-bold text-on-surface-variant my-2 lg:my-3">
+                <?php if ($product['status'] === 'ready' && $product['stock'] > 0): ?>
+                    <div class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px] text-green-600">check_circle</span>
+                        <span>Ready Stock</span>
+                    </div>
+                <?php endif; ?>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
+                    <span>Garansi Resmi</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">package_2</span>
+                    <span>Packing Aman</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">headset_mic</span>
+                    <span>Konsultasi Gratis</span>
+                </div>
+            </div>
+
             <!-- Tabs (Description & Specifications) -->
             <div class="space-y-4">
                 <div class="flex border-b border-gray-200 gap-6">
@@ -261,7 +309,29 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
                 
                 <!-- Spesifikasi Content -->
                 <div id="spesifikasi-tab" class="tab-content leading-relaxed text-xs text-on-surface-variant">
-                    <?php if (!empty($product['specification'])): ?>
+                    <?php if (!empty($parsedSpec['parsed'])): ?>
+                        <div class="overflow-hidden border border-gray-200 rounded-lg mb-4">
+                            <table class="w-full text-left border-collapse">
+                                <tbody>
+                                    <?php foreach ($parsedSpec['parsed'] as $index => $row): ?>
+                                        <tr class="<?= $index % 2 === 0 ? 'bg-slate-50' : 'bg-white' ?> border-b border-gray-100 last:border-0">
+                                            <th class="py-2.5 px-4 w-1/3 font-bold text-on-surface-variant border-r border-gray-100 align-top">
+                                                <?= sanitizeOutput($row['key']) ?>
+                                            </th>
+                                            <td class="py-2.5 px-4 text-on-surface align-top">
+                                                <?= sanitizeOutput($row['value']) ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php if (!empty($parsedSpec['unparsed'])): ?>
+                            <div class="pt-2 text-on-surface-variant">
+                                <?= nl2br(sanitizeOutput($parsedSpec['unparsed'])) ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php elseif (!empty($product['specification'])): ?>
                         <?= nl2br(sanitizeOutput($product['specification'])) ?>
                     <?php else: ?>
                         <p class="text-on-surface-variant italic">Tidak ada spesifikasi khusus.</p>
@@ -357,14 +427,7 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
                 
                 <!-- Trust propositions list -->
                 <div class="border-t border-gray-100 pt-3 space-y-2 text-[10px] text-on-surface-variant font-medium">
-                    <div class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-green-600">verified_user</span>
-                        <span>100% Ori &amp; Garansi Resmi</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-sm text-blue-600">local_shipping</span>
-                        <span>Pengiriman Aman &amp; Terpercaya</span>
-                    </div>
+                    <!-- Trust badges deduplicated into Trust Badge Strip -->
                 </div>
             </div>
         </section>
@@ -418,6 +481,43 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
     </section>
     <?php endif; ?>
 </div>
+
+<!-- Mobile Sticky CTA Bar — only visible below lg breakpoint -->
+<?php if ($product['status'] === 'ready' || $product['status'] === 'po'): ?>
+<div id="mobile-sticky-cta" class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 lg:hidden">
+    <div class="flex items-center justify-between gap-3 max-w-max-width mx-auto">
+        <!-- Price Summary -->
+        <div class="flex-shrink-0">
+            <p class="text-xs text-on-surface-variant">Total</p>
+            <p id="mobile-cta-price" class="text-sm font-black text-secondary"><?= formatRupiah($activePrice) ?></p>
+        </div>
+        <!-- Action Buttons -->
+        <div class="flex gap-2 flex-1 max-w-xs">
+            <button type="button" onclick="submitCartFromMobile()" 
+                class="flex-1 bg-white border-2 border-secondary text-secondary py-2.5 rounded-lg font-bold text-xs">
+                Keranjang
+            </button>
+            <button type="button" onclick="buyNow()" 
+                class="flex-1 bg-secondary text-white py-2.5 rounded-lg font-bold text-xs">
+                Beli Sekarang
+            </button>
+        </div>
+    </div>
+</div>
+<?php else: ?>
+<div id="mobile-sticky-cta" class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 lg:hidden">
+    <div class="flex items-center justify-between gap-3 max-w-max-width mx-auto">
+        <!-- Price Summary Only (buttons hidden when product status is 'habis') -->
+        <div class="flex-shrink-0">
+            <p class="text-xs text-on-surface-variant">Total</p>
+            <p id="mobile-cta-price" class="text-sm font-black text-secondary"><?= formatRupiah($activePrice) ?></p>
+        </div>
+        <div class="flex gap-2 flex-1 max-w-xs justify-end">
+            <span class="text-xs font-bold text-red-600">Stok Habis</span>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Lightbox Modal Overlay UI -->
 <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 md:p-8 hidden opacity-0" onclick="closeLightbox()">
@@ -579,6 +679,14 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
         document.getElementById('form-quantity').value = qty;
         const total = currentPrice * qty;
         document.getElementById('total-price').textContent = formatCurrency(total);
+        updateMobileCtaPrice();
+    }
+
+    function updateMobileCtaPrice() {
+        const mobilePriceEl = document.getElementById('mobile-cta-price');
+        if (mobilePriceEl) {
+            mobilePriceEl.textContent = formatCurrency(currentPrice * qty);
+        }
     }
 
     // Quantity controls
@@ -624,6 +732,14 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
         });
     }
 
+    // Submit cart from mobile CTA
+    function submitCartFromMobile() {
+        const form = document.getElementById('add-to-cart-form');
+        if (!form) return;
+        document.getElementById('form-quantity').value = qty;
+        form.submit();
+    }
+
     function startCountdown() {
         let fsSeconds = <?= (int)$fsSeconds ?>;
         if (fsSeconds <= 0) return;
@@ -656,6 +772,7 @@ $activePrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_
     window.addEventListener('DOMContentLoaded', () => {
         calculateShipping();
         startCountdown();
+        updateMobileCtaPrice();
     });
 </script>
 

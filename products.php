@@ -14,7 +14,7 @@ $sort = $_GET['sort'] ?? 'newest';
 $page = max(1, (int)($_GET['page'] ?? 1));
 
 // Build query
-$perPage = 12;
+$perPage = 24;
 $where = ['p.is_active = 1'];
 $params = [];
 
@@ -39,6 +39,11 @@ if ($status !== '' && in_array($status, ['ready', 'po'])) {
     $params[] = $status;
 }
 
+$quickFilter = validateQuickFilter($_GET['filter'] ?? '');
+$quickFilterResult = applyQuickFilterToWhereClause($quickFilter, $where, $params);
+$where = $quickFilterResult['where'];
+$params = $quickFilterResult['params'];
+
 $whereClause = implode(' AND ', $where);
 
 // Sort options
@@ -48,6 +53,10 @@ $sortOptions = [
     'expensive' => 'p.selling_price DESC',
 ];
 $orderBy = $sortOptions[$sort] ?? 'p.created_at DESC';
+
+if ($quickFilter === 'new') {
+    $orderBy = 'p.created_at DESC';
+}
 
 // Count total results
 $countQuery = "SELECT COUNT(*) FROM products p WHERE $whereClause";
@@ -60,6 +69,7 @@ $totalPages = (int)ceil($total / $perPage);
 if ($totalPages > 0 && $page > $totalPages) {
     $page = $totalPages;
 }
+$page = max(1, min($page, max(1, $totalPages)));
 $offset = ($page - 1) * $perPage;
 
 // Fetch products
@@ -171,6 +181,41 @@ $csrfToken = generateCSRFToken();
     }
     </script>
 
+    <!-- Quick Filter Chips -->
+    <?php
+    $chipBaseParams = [];
+    if ($search !== '') $chipBaseParams['search'] = $search;
+    if ($categoryId > 0) $chipBaseParams['category'] = $categoryId;
+    if ($status !== '') $chipBaseParams['status'] = $status;
+    if ($sort !== 'newest') $chipBaseParams['sort'] = $sort;
+    ?>
+    <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-4 md:mb-lg pb-1">
+        <a href="<?= sanitizeOutput('products?' . http_build_query($chipBaseParams)) ?>" class="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold border <?= $quickFilter === '' ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface-variant border-outline-variant/60 hover:bg-surface-container hover:border-outline-variant transition-colors' ?>">Semua</a>
+        <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($chipBaseParams, ['filter' => 'ready']))) ?>" class="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold border <?= $quickFilter === 'ready' ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface-variant border-outline-variant/60 hover:bg-surface-container hover:border-outline-variant transition-colors' ?>">Ready Stock</a>
+        <?php if ($isGlobalFlashSaleActive): ?>
+            <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($chipBaseParams, ['filter' => 'promo']))) ?>" class="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold border <?= $quickFilter === 'promo' ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface-variant border-outline-variant/60 hover:bg-surface-container hover:border-outline-variant transition-colors' ?>">Promo</a>
+        <?php endif; ?>
+        <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($chipBaseParams, ['filter' => 'new']))) ?>" class="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold border <?= $quickFilter === 'new' ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface-variant border-outline-variant/60 hover:bg-surface-container hover:border-outline-variant transition-colors' ?>">Terbaru</a>
+        
+        <?php 
+        $catLimit = 6;
+        $catCount = 0;
+        foreach ($categories as $cat): 
+            if ($catCount >= $catLimit) break;
+            $catCount++;
+            
+            $catParams = $chipBaseParams;
+            $catParams['category'] = $cat['id'];
+            if ($quickFilter !== '') {
+                $catParams['filter'] = $quickFilter;
+            }
+        ?>
+            <a href="<?= sanitizeOutput('products?' . http_build_query($catParams)) ?>" class="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold border <?= $categoryId === (int)$cat['id'] ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface-variant border-outline-variant/60 hover:bg-surface-container hover:border-outline-variant transition-colors' ?>">
+                <?= sanitizeOutput($cat['name']) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
     <?php if (empty($products)): ?>
         <!-- Empty catalog state -->
         <div class="bg-white border border-outline-variant/60 rounded-xl p-6 md:p-12 text-center max-w-md mx-auto space-y-md">
@@ -193,7 +238,7 @@ $csrfToken = generateCSRFToken();
             ?>
             <div class="group bg-white border border-outline-variant/60 tech-card flex flex-col overflow-hidden">
                 <div class="relative aspect-square overflow-hidden bg-surface-container-low p-2">
-                    <img alt="<?= sanitizeOutput($product['name']) ?>" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" src="<?= $imgSrc ?>"/>
+                    <img alt="<?= sanitizeOutput($product['name']) ?>" loading="lazy" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" src="<?= $imgSrc ?>"/>
                     <button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center wishlist-btn transition-colors hover:bg-white <?= $inWishlist ? 'active' : '' ?>" onclick="event.stopPropagation(); toggleWishlist(this, <?= (int)$product['id'] ?>);">
                         <span class="material-symbols-outlined text-sm text-on-surface-variant" style="<?= $inWishlist ? "font-variation-settings: 'FILL' 1, 'wght' 400; color: #ba1a1a;" : "" ?>">favorite</span>
                     </button>
@@ -210,7 +255,7 @@ $csrfToken = generateCSRFToken();
                             <p class="text-[10px] font-semibold text-on-surface-variant/70 line-through"><?= formatRupiah((int)$product['selling_price']) ?></p>
                         <?php endif; ?>
                     </div>
-                    <div class="flex items-center gap-1.5 mb-2 select-none">
+                    <div class="flex items-center gap-1.5 mb-1 select-none">
                         <span class="text-[11px] font-semibold text-on-surface-variant">Stok: <?= (int)$product['stock'] ?></span>
                         <span class="text-outline-variant/50 text-[10px]">|</span>
                         <?php if ($product['status'] === 'ready'): ?>
@@ -253,25 +298,30 @@ $csrfToken = generateCSRFToken();
                 if ($categoryId > 0) $queryParams['category'] = $categoryId;
                 if ($status !== '') $queryParams['status'] = $status;
                 if ($sort !== 'newest') $queryParams['sort'] = $sort;
+                if ($quickFilter !== '') $queryParams['filter'] = $quickFilter;
+                
+                $paginationRange = generatePaginationRange($page, $totalPages, 1);
                 ?>
 
                 <!-- Prev button -->
                 <?php if ($page > 1): ?>
-                    <a href="products?<?= http_build_query(array_merge($queryParams, ['page' => $page - 1])) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-lg bg-white hover:bg-secondary/5 font-bold transition-colors text-secondary">&laquo;</a>
+                    <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($queryParams, ['page' => $page - 1]))) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-lg bg-white hover:bg-secondary/5 font-bold transition-colors text-secondary">&laquo;</a>
                 <?php endif; ?>
 
                 <!-- Page numbers -->
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <?php if ($i === $page): ?>
+                <?php foreach ($paginationRange as $i): ?>
+                    <?php if ($i === '...'): ?>
+                        <span class="w-10 h-10 flex items-center justify-center font-bold text-on-surface-variant">...</span>
+                    <?php elseif ($i === $page): ?>
                         <span class="w-10 h-10 bg-secondary text-white flex items-center justify-center rounded-lg font-bold"><?= $i ?></span>
                     <?php else: ?>
-                        <a href="products?<?= http_build_query(array_merge($queryParams, ['page' => $i])) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-xl bg-white hover:bg-secondary/5 font-bold transition-all text-on-surface-variant hover:text-secondary"><?= $i ?></a>
+                        <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($queryParams, ['page' => $i]))) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-xl bg-white hover:bg-secondary/5 font-bold transition-all text-on-surface-variant hover:text-secondary"><?= $i ?></a>
                     <?php endif; ?>
-                <?php endfor; ?>
+                <?php endforeach; ?>
 
                 <!-- Next button -->
                 <?php if ($page < $totalPages): ?>
-                    <a href="products?<?= http_build_query(array_merge($queryParams, ['page' => $page + 1])) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-lg bg-white hover:bg-secondary/5 font-bold transition-colors text-secondary">&raquo;</a>
+                    <a href="<?= sanitizeOutput('products?' . http_build_query(array_merge($queryParams, ['page' => $page + 1]))) ?>" class="w-10 h-10 border border-outline-variant hover:border-secondary flex items-center justify-center rounded-lg bg-white hover:bg-secondary/5 font-bold transition-colors text-secondary">&raquo;</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>

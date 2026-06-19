@@ -768,3 +768,179 @@ function safeRedirect(
     $safe = sanitizeRedirectTarget($target, $allowedHost, $fallback);
     redirect($safe, $message, $type);
 }
+
+
+/**
+ * Parse a plain-text specification string into key-value pairs.
+ * Supports multiple delimiter formats commonly used in product specs.
+ *
+ * @param string|null $specText Raw specification text from database
+ * @return array{parsed: array<int, array{key: string, value: string}>, unparsed: string}
+ */
+function parseSpecification(?string $specText): array
+{
+    $text = trim((string)$specText);
+    if ($text === '') {
+        return ['parsed' => [], 'unparsed' => ''];
+    }
+
+    $lines = preg_split('/\r\n|\r|\n/', $text);
+    $parsed = [];
+    $unparsedLines = [];
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
+
+        // Split by the first occurrence of a delimiter: ':', '-', '=', '|'
+        // Allow optional spaces around the delimiter
+        // Requirement 4.1: Support Key: Value, Key - Value, Key = Value, Key | Value
+        if (preg_match('/^([^:=\-|]+?)\s*[:=\-|]\s*(.+)$/', $line, $matches)) {
+            $key = trim($matches[1]);
+            $value = trim($matches[2]);
+
+            if ($key !== '' && $value !== '') {
+                $parsed[] = ['key' => $key, 'value' => $value];
+                continue;
+            }
+        }
+
+        $unparsedLines[] = $line;
+    }
+
+    return [
+        'parsed' => $parsed,
+        'unparsed' => implode("\n", $unparsedLines),
+    ];
+}
+
+/**
+ * Generate a smart pagination range with ellipsis markers.
+ * Shows first page, last page, current page, and neighbors, with '...' for gaps.
+ *
+ * @param int $currentPage The current active page (1-based)
+ * @param int $totalPages Total number of pages
+ * @param int $neighbors Number of neighbor pages to show around current (default: 1)
+ * @return array<int|string> Array of page numbers and '...' strings
+ */
+function generatePaginationRange(int $currentPage, int $totalPages, int $neighbors = 1): array
+{
+    if ($totalPages <= 1) {
+        return $totalPages === 1 ? [1] : [];
+    }
+
+    $currentPage = max(1, min($currentPage, $totalPages));
+    $neighbors = max(0, $neighbors);
+
+    $pages = [1, $totalPages];
+
+    for ($i = $currentPage - $neighbors; $i <= $currentPage + $neighbors; $i++) {
+        if ($i > 1 && $i < $totalPages) {
+            $pages[] = $i;
+        }
+    }
+
+    $pages = array_values(array_unique($pages));
+    sort($pages, SORT_NUMERIC);
+
+    $range = [];
+    $previous = null;
+
+    foreach ($pages as $page) {
+        if ($previous !== null && $page - $previous > 1) {
+            $range[] = '...';
+        }
+        $range[] = $page;
+        $previous = $page;
+    }
+
+    return $range;
+}
+
+/**
+ * Generate placeholder social proof data for a product.
+ * Uses deterministic seeding from product ID for consistent display.
+ *
+ * @param array $product Product row containing at least id field
+ * @return array{rating: float, review_count: int, sold_count: int, sold_display: string}
+ */
+function generateSocialProof(array $product): array
+{
+    $seed = max(1, (int)($product['id'] ?? 1));
+
+    $ratingRaw = 40 + ($seed % 11); // 40..50
+    $rating = $ratingRaw / 10;
+
+    $reviewCount = 5 + (($seed * 7) % 196); // 5..200
+    $soldCount = 10 + (($seed * 13) % 491); // 10..500
+    $soldDisplay = formatSoldCount($soldCount);
+
+    return [
+        'rating' => (float)$rating,
+        'review_count' => (int)$reviewCount,
+        'sold_count' => (int)$soldCount,
+        'sold_display' => $soldDisplay,
+    ];
+}
+
+/**
+ * Format raw sold count into human-readable marketplace-style label.
+ * 
+ * @param int $count Raw sold count
+ * @return string Human-readable sold count label, e.g. "50+" or "300+"
+ */
+function formatSoldCount(int $count): string
+{
+    if ($count >= 1000) {
+        return floor($count / 1000) . 'rb+';
+    }
+
+    if ($count >= 100) {
+        return floor($count / 100) * 100 . '+';
+    }
+
+    if ($count >= 10) {
+        return floor($count / 10) * 10 . '+';
+    }
+
+    return (string)max(0, $count);
+}
+
+/**
+ * Validate quick filter parameter.
+ * 
+ * @param string $filter Raw filter query parameter
+ * @return string One of '', 'ready', 'promo', 'new'
+ */
+function validateQuickFilter(string $filter): string
+{
+    $allowed = ['ready', 'promo', 'new'];
+    return in_array($filter, $allowed, true) ? $filter : '';
+}
+
+/**
+ * Apply quick filter to WHERE clause and parameters array.
+ * 
+ * @param string $quickFilter Validated quick filter ('ready', 'promo', 'new')
+ * @param array $where Existing SQL WHERE fragments
+ * @param array $params Existing prepared statement params
+ * @return array{where: array<int, string>, params: array<int, mixed>}
+ */
+function applyQuickFilterToWhereClause(string $quickFilter, array $where, array $params): array
+{
+    if ($quickFilter === 'ready') {
+        $where[] = "p.status = ?";
+        $params[] = 'ready';
+        $where[] = "p.stock > 0";
+    }
+
+    if ($quickFilter === 'promo') {
+        $where[] = "p.promo_active = 1";
+        $where[] = "p.promo_price > 0";
+        $where[] = "p.promo_stock > 0";
+    }
+
+    return ['where' => $where, 'params' => $params];
+}
