@@ -944,3 +944,332 @@ function applyQuickFilterToWhereClause(string $quickFilter, array $where, array 
 
     return ['where' => $where, 'params' => $params];
 }
+
+/**
+ * Detect whether a banner row contains source-backed promotional wording.
+ *
+ * @param array $banner Existing banner database row
+ * @return bool True when title or description includes promo wording
+ */
+function isHomepagePromoShortcutBanner(array $banner): bool
+{
+    $haystack = strtolower(trim((string)($banner['title'] ?? '') . ' ' . (string)($banner['description'] ?? '')));
+    if ($haystack === '') {
+        return false;
+    }
+
+    foreach (['promo', 'diskon', 'sale'] as $keyword) {
+        if (str_contains($haystack, $keyword)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Extract configured homepage promo shortcuts from existing store settings only.
+ * Empty titles are omitted; no default card data is generated.
+ *
+ * @param array $storeSettings Existing store settings row/map
+ * @param int $limit Maximum number of configured promo shortcut slots to read
+ * @return array<int, array{title: string, desc: string, link: string, icon: string, index: int}>
+ */
+function extractHomepagePromoShortcuts(array $storeSettings, int $limit = 3): array
+{
+    $shortcuts = [];
+    $seen = [];
+    $limit = max(0, $limit);
+
+    for ($i = 1; $i <= $limit; $i++) {
+        $title = trim((string)($storeSettings["promo_banner_{$i}_title"] ?? ''));
+        if ($title === '') {
+            continue;
+        }
+
+        $desc = trim((string)($storeSettings["promo_banner_{$i}_desc"] ?? ''));
+        $link = trim((string)($storeSettings["promo_banner_{$i}_link"] ?? ''));
+        $icon = trim((string)($storeSettings["promo_banner_{$i}_icon"] ?? ''));
+        $fingerprint = strtolower($title . "\n" . $desc . "\n" . $link);
+        if (isset($seen[$fingerprint])) {
+            continue;
+        }
+        $seen[$fingerprint] = true;
+
+        $shortcuts[] = [
+            'title' => $title,
+            'desc' => $desc,
+            'link' => $link,
+            'icon' => $icon,
+            'index' => $i,
+        ];
+    }
+
+    return $shortcuts;
+}
+
+/**
+ * Parse popular search settings into trimmed, non-empty source-ordered tokens.
+ *
+ * @param string|null $popularSearches Comma-separated store setting value
+ * @return array<int, string>
+ */
+function parsePopularSearches(?string $popularSearches): array
+{
+    $raw = trim((string)$popularSearches);
+    if ($raw === '') {
+        return [];
+    }
+
+    $tokens = [];
+    foreach (explode(',', $raw) as $token) {
+        $token = trim($token);
+        if ($token !== '') {
+            $tokens[] = $token;
+        }
+    }
+
+    return $tokens;
+}
+
+/**
+ * Normalize flash sale settings into an active flag and remaining seconds.
+ *
+ * @param array $storeSettings Existing store settings row/map
+ * @param int|null $now Unix timestamp, injectable for tests
+ * @return array{is_active: bool, seconds_remaining: int, ends_at: string}
+ */
+function normalizeFlashSaleState(array $storeSettings, ?int $now = null): array
+{
+    $now = $now ?? time();
+    $endValue = trim((string)($storeSettings['flash_sale_end'] ?? ''));
+    $endTime = $endValue !== '' ? strtotime($endValue) : false;
+    $secondsRemaining = ($endTime !== false && $endTime > $now) ? $endTime - $now : 0;
+    $isActiveSetting = !empty($storeSettings['flash_sale_active']);
+
+    return [
+        'is_active' => $isActiveSetting && $secondsRemaining > 0,
+        'seconds_remaining' => (int)$secondsRemaining,
+        'ends_at' => $endValue,
+    ];
+}
+
+/**
+ * Select the current product price from database row values and flash sale state.
+ *
+ * @param array $product Existing product database row
+ * @param bool $isFlashSaleActive Whether the global flash sale state is active
+ * @return array{price: int, original_price: int, is_promo: bool}
+ */
+function determineActivePrice(array $product, bool $isFlashSaleActive): array
+{
+    $sellingPrice = max(0, (int)($product['selling_price'] ?? 0));
+    $promoPrice = (int)($product['promo_price'] ?? 0);
+    $promoStock = (int)($product['promo_stock'] ?? 0);
+    $isPromo = $isFlashSaleActive
+        && !empty($product['promo_active'])
+        && $promoPrice > 0
+        && $promoStock > 0;
+
+    return [
+        'price' => $isPromo ? $promoPrice : $sellingPrice,
+        'original_price' => $sellingPrice,
+        'is_promo' => $isPromo,
+    ];
+}
+
+/**
+ * Calculate promo stock progress using only promo_stock and promo_stock_initial.
+ * Returns null when progress should be omitted.
+ *
+ * @param array $product Existing product database row
+ * @return int|null Percentage between 0 and 100, or null when unavailable
+ */
+function calculatePromoStockPercent(array $product): ?int
+{
+    if (!array_key_exists('promo_stock', $product)) {
+        return null;
+    }
+
+    $promoStock = (int)$product['promo_stock'];
+    $promoStockInitial = (int)($product['promo_stock_initial'] ?? 0);
+
+    if ($promoStockInitial <= 0) {
+        return null;
+    }
+
+    return max(0, min(100, (int)round(($promoStock / $promoStockInitial) * 100)));
+}
+
+/**
+ * Resolve a homepage product image URL from an existing product row.
+ * Falls back only to the existing placeholder asset when no usable image is present.
+ *
+ * @param array $product Existing product database row
+ * @return string Safe relative or absolute image URL
+ */
+function resolveHomepageProductImage(array $product): string
+{
+    $image = trim((string)($product['image'] ?? ''));
+    if ($image === '') {
+        return 'assets/images/placeholder.png';
+    }
+
+    if (preg_match('#^https?://#i', $image) === 1 || str_starts_with($image, '/')) {
+        return $image;
+    }
+
+    if (preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $image) === 1 && file_exists(__DIR__ . '/../uploads/products/' . $image)) {
+        return 'uploads/products/' . $image;
+    }
+
+    return 'assets/images/placeholder.png';
+}
+
+/**
+ * Render a reusable homepage product card while preserving cart and wishlist contracts.
+ *
+ * @param array $product Existing product database row
+ * @param string $csrfToken CSRF token for commerce forms
+ * @param bool $isFlashSaleActive Whether promo pricing may be active
+ * @param array<int, int> $wishlist Product identifiers currently in wishlist
+ * @param bool $lazyImage Whether to add loading="lazy" to the product image
+ * @return string Sanitized homepage product card HTML
+ */
+function renderHomepageProductCard(
+    array $product,
+    string $csrfToken,
+    bool $isFlashSaleActive = false,
+    array $wishlist = [],
+    bool $lazyImage = false
+): string {
+    $productId = (int)($product['id'] ?? 0);
+    $name = (string)($product['name'] ?? '');
+    $categoryName = (string)($product['category_name'] ?? '');
+    $slug = (string)($product['slug'] ?? '');
+    $stock = (int)($product['stock'] ?? 0);
+    $status = (string)($product['status'] ?? '');
+    $imageSrc = resolveHomepageProductImage($product);
+    $price = determineActivePrice($product, $isFlashSaleActive);
+    $inWishlist = in_array($productId, array_map('intval', $wishlist), true);
+    $wishlistStyle = $inWishlist ? "font-variation-settings: 'FILL' 1, 'wght' 400; color: #ba1a1a;" : '';
+    $lazyAttribute = $lazyImage ? ' loading="lazy"' : '';
+
+    if ($status === 'ready') {
+        $statusBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-emerald-500/10 text-emerald-700">Ready</span>';
+    } elseif ($status === 'po') {
+        $statusBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-amber-500/10 text-amber-700">Pre-Order</span>';
+    } else {
+        $statusBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-red-500/10 text-red-700">Habis</span>';
+    }
+
+    ob_start();
+    ?>
+    <div class="group bg-white tech-card flex flex-col overflow-hidden">
+        <div class="relative aspect-square overflow-hidden bg-surface-container-low p-2">
+            <img alt="<?= sanitizeOutput($name) ?>" class="w-full h-full object-contain transition-transform duration-300" src="<?= sanitizeOutput($imageSrc) ?>"<?= $lazyAttribute ?>/>
+            <form action="actions/wishlist-toggle" method="POST" class="absolute top-2 right-2 inline" onsubmit="event.preventDefault(); event.stopPropagation(); toggleWishlist(this.querySelector('button'), <?= $productId ?>);">
+                <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
+                <input type="hidden" name="product_id" value="<?= $productId ?>">
+                <button type="submit" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center wishlist-btn transition-all hover:scale-105 <?= $inWishlist ? 'active' : '' ?>" aria-label="Toggle wishlist">
+                    <span class="material-symbols-outlined text-sm text-on-surface-variant" style="<?= sanitizeOutput($wishlistStyle) ?>">favorite</span>
+                </button>
+            </form>
+        </div>
+        <div class="p-3 flex flex-col flex-grow">
+            <span class="text-[9px] font-bold text-secondary uppercase tracking-wider mb-1 block"><?= sanitizeOutput($categoryName) ?></span>
+            <h3 class="text-xs font-bold text-on-background line-clamp-2 min-h-[36px] mb-1.5 leading-snug group-hover:text-secondary transition-colors cursor-pointer" onclick="window.location.href='product-detail?slug=<?= rawurlencode($slug) ?>'">
+                <?= sanitizeOutput($name) ?>
+            </h3>
+            <div class="mb-2 flex flex-wrap items-baseline gap-1">
+                <p class="text-sm font-black text-on-background"><?= formatRupiah($price['price']) ?></p>
+                <?php if ($price['is_promo']): ?>
+                    <p class="text-[10px] font-semibold text-on-surface-variant/70 line-through"><?= formatRupiah($price['original_price']) ?></p>
+                <?php endif; ?>
+            </div>
+            <div class="flex items-center gap-1.5 mb-2.5 select-none">
+                <span class="text-[10px] font-bold text-on-surface-variant/80">Stok: <?= $stock ?></span>
+                <span class="text-outline-variant/50 text-[10px]">|</span>
+                <?= $statusBadge ?>
+            </div>
+            <div class="mt-auto flex items-center justify-between border-t border-outline-variant/30 pt-2.5">
+                <div class="flex items-center gap-0.5 text-on-surface-variant/80">
+                    <span class="material-symbols-outlined text-[12px]">location_on</span>
+                    <span class="text-[9px] font-semibold">Toko Pusat</span>
+                </div>
+                <?php if (($status === 'ready' || $status === 'po') && $productId > 0): ?>
+                    <form action="actions/cart-add" method="POST" class="inline">
+                        <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
+                        <input type="hidden" name="product_id" value="<?= $productId ?>">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="w-8 h-8 flex items-center justify-center bg-secondary/5 text-secondary rounded-lg hover:bg-secondary hover:text-white transition-colors" title="Tambah ke keranjang">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <span class="text-[9px] bg-outline-variant/30 text-on-surface-variant px-2 py-0.5 rounded font-bold">Habis</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php
+    return trim((string)ob_get_clean());
+}
+
+/**
+ * Render a reusable homepage product rail for data-backed product sections.
+ *
+ * @param array{title?: string, subtitle?: string, view_all_url?: string, products?: array<int, array>, limit?: int} $config
+ * @param string $csrfToken CSRF token for commerce forms
+ * @param bool $isFlashSaleActive Whether promo pricing may be active
+ * @param array<int, int> $wishlist Product identifiers currently in wishlist
+ * @return string Sanitized homepage product rail HTML, or an empty string when no products exist
+ */
+function renderHomepageProductRail(
+    array $config,
+    string $csrfToken,
+    bool $isFlashSaleActive = false,
+    array $wishlist = []
+): string {
+    $products = array_values(array_filter($config['products'] ?? [], 'is_array'));
+    if ($products === []) {
+        return '';
+    }
+
+    $limit = (int)($config['limit'] ?? 12);
+    if ($limit <= 0) {
+        return '';
+    }
+
+    $products = array_slice($products, 0, $limit);
+    $title = (string)($config['title'] ?? '');
+    $subtitle = (string)($config['subtitle'] ?? '');
+    $viewAllUrl = (string)($config['view_all_url'] ?? '');
+
+    ob_start();
+    ?>
+    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2" data-homepage-product-rail>
+        <div class="flex items-end justify-between mb-3 md:mb-4 gap-4">
+            <div>
+                <h2 class="text-xl md:text-2xl font-extrabold text-on-background leading-tight"><?= sanitizeOutput($title) ?></h2>
+                <?php if ($subtitle !== ''): ?>
+                    <p class="text-xs md:text-sm text-on-surface-variant mt-1"><?= sanitizeOutput($subtitle) ?></p>
+                <?php endif; ?>
+            </div>
+            <?php if ($viewAllUrl !== ''): ?>
+                <a href="<?= sanitizeOutput($viewAllUrl) ?>" class="text-secondary font-bold text-xs md:text-sm hover:text-secondary-container flex items-center gap-1 group transition-colors flex-shrink-0">
+                    Lihat Semua
+                    <span class="material-symbols-outlined text-sm md:text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <?php foreach ($products as $index => $product): ?>
+                <?= renderHomepageProductCard($product, $csrfToken, $isFlashSaleActive, $wishlist, $index >= 4) ?>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php
+    return trim((string)ob_get_clean());
+}
