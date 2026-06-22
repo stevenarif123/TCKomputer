@@ -380,6 +380,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </form>
 
         <div class="flex items-center gap-xs sm:gap-sm">
+            <!-- Mobile Search Toggle Button -->
+            <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all md:hidden" title="Cari" onclick="toggleMobileSearch()">
+                <span class="material-symbols-outlined text-on-surface-variant" id="mobile-search-icon">search</span>
+            </button>
+
             <!-- Mobile Menu Toggle Button -->
             <button class="p-2 hover:bg-surface-container/50 rounded-full transition-all lg:hidden" title="Menu" onclick="toggleMobileMenu()">
                 <span class="material-symbols-outlined text-on-surface-variant" id="mobile-menu-icon">menu</span>
@@ -480,6 +485,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <?php endif; ?>
         </div>
     </nav>
+
+    <!-- Mobile Search Bar Dropdown -->
+    <div id="mobile-search-bar" class="hidden border-t border-outline-variant/40 bg-white px-4 py-3 md:hidden transition-all duration-300">
+        <form action="products" method="GET" class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+            <input id="mobile-search-input" name="search" class="w-full bg-surface-container-low border border-outline-variant/60 rounded-lg pl-10 pr-4 py-2 text-body-sm outline-none focus:border-secondary focus:bg-white" placeholder="Cari hardware..." type="text" value="<?= sanitizeOutput($_GET['search'] ?? '') ?>"/>
+        </form>
+    </div>
 
     <!-- Mobile Navigation Drawer -->
     <div id="mobile-menu" class="hidden border-t border-outline-variant/40 bg-white/95 backdrop-blur-md px-4 py-4 space-y-3 lg:hidden transition-all duration-300">
@@ -746,10 +759,48 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </div>
 
 <script>
+    // Toggle mobile search bar dropdown
+    function toggleMobileSearch() {
+        const searchBar = document.getElementById('mobile-search-bar');
+        const searchIcon = document.getElementById('mobile-search-icon');
+        const menu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('mobile-menu-icon');
+        
+        // Hide mobile menu if open
+        if (menu && !menu.classList.contains('hidden')) {
+            menu.classList.add('hidden');
+            if (menuIcon) menuIcon.textContent = 'menu';
+        }
+        
+        if (searchBar) {
+            const isHidden = searchBar.classList.contains('hidden');
+            if (isHidden) {
+                searchBar.classList.remove('hidden');
+                if (searchIcon) searchIcon.textContent = 'close';
+                setTimeout(() => {
+                    const input = document.getElementById('mobile-search-input');
+                    if (input) input.focus();
+                }, 100);
+            } else {
+                searchBar.classList.add('hidden');
+                if (searchIcon) searchIcon.textContent = 'search';
+            }
+        }
+    }
+
     // Toggle mobile menu drawer
     function toggleMobileMenu() {
         const menu = document.getElementById('mobile-menu');
         const icon = document.getElementById('mobile-menu-icon');
+        const searchBar = document.getElementById('mobile-search-bar');
+        const searchIcon = document.getElementById('mobile-search-icon');
+
+        // Hide search bar if open
+        if (searchBar && !searchBar.classList.contains('hidden')) {
+            searchBar.classList.add('hidden');
+            if (searchIcon) searchIcon.textContent = 'search';
+        }
+
         const isHidden = menu.classList.contains('hidden');
         if (isHidden) {
             menu.classList.remove('hidden');

@@ -103,8 +103,41 @@ $bannerStyles = [
     </div>
     <?php endif; ?>
 
+    <!-- Modern Mobile Welcome Banner (Only on Mobile/Tablet) -->
+    <section class="max-w-max-width mx-auto px-4 lg:hidden mb-1">
+        <div class="bg-gradient-to-r from-secondary to-blue-700 rounded-xl p-5 text-white shadow-sm flex flex-col justify-between relative overflow-hidden select-none">
+            <!-- Decorative background elements -->
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div class="absolute -left-6 -top-6 w-20 h-20 bg-white/5 rounded-full blur-lg"></div>
+            
+            <div class="relative z-10">
+                <span class="inline-block bg-white/20 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">Selamat Datang</span>
+                <h2 class="text-lg font-black tracking-tight leading-tight">TC Komputer Toraja</h2>
+                <p class="text-xs text-white/80 mt-1 max-w-[90%] font-medium">Solusi Kebutuhan IT & Aksesoris Terpercaya dengan Garansi Resmi.</p>
+            </div>
+            
+            <div class="mt-4 flex items-center justify-between relative z-10">
+                <a href="products" class="px-4 py-2 bg-white text-secondary hover:bg-secondary-container hover:text-white rounded-lg text-xs font-bold shadow-sm transition-all duration-300 transform active:scale-95 flex items-center gap-1">
+                    <span>Lihat Semua Produk</span>
+                    <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                </a>
+                <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-sm">devices</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Search Bar (Only on Mobile/Tablet) -->
+    <div class="block lg:hidden px-4 mb-2 animate-fade-in-up">
+        <form action="products" method="GET" class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+            <input name="search" class="w-full bg-white border border-outline-variant/80 rounded-xl pl-10 pr-4 py-3 text-body-sm focus:border-secondary transition-colors outline-none shadow-sm" placeholder="Cari hardware, printer, aksesoris..." type="search" value="<?= sanitizeOutput($_GET['search'] ?? '') ?>"/>
+        </form>
+    </div>
+
     <!-- Compact Hero Marketplace Cluster -->
-    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop my-2 md:my-3" aria-label="Promo utama TC Komputer">
+    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop my-2 md:my-3 hidden lg:block" aria-label="Promo utama TC Komputer">
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-3 lg:gap-4 items-stretch">
             <div class="relative w-full max-h-[220px] md:max-h-[360px] overflow-hidden" style="aspect-ratio: 1200 / 380;">
                 <div class="hero-slides absolute inset-0">
@@ -137,7 +170,7 @@ $bannerStyles = [
             </div>
 
             <?php if (!empty($promoBanners)): ?>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-0 lg:max-h-[360px]">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-2 lg:gap-3 lg:max-h-[360px]">
                 <?php foreach ($promoBanners as $pb): ?>
                 <?php
                     $style = $bannerStyles[$pb['index']] ?? $bannerStyles[1];
@@ -165,7 +198,17 @@ $bannerStyles = [
     <!-- Discovery Rail: active categories only -->
     <section id="categories" class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2 md:py-3 animate-fade-in-up">
         <div class="bg-white overflow-hidden">
-            <div class="flex items-center justify-center gap-3 overflow-x-auto hide-scrollbar py-2" aria-label="Jelajahi kategori">
+            <div class="flex items-center gap-3 overflow-x-auto hide-scrollbar px-3 py-3 md:px-4 md:py-3" aria-label="Jelajahi kategori">
+                <!-- Semua Produk category shortcut for mobile-first layout -->
+                <a class="category-card flex-shrink-0 w-[86px] md:w-[96px] py-1.5 px-2 flex flex-col items-center justify-center gap-1 group transition-all duration-200 hover:bg-secondary/[0.04]" href="products">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-surface-container flex items-center justify-center rounded-full group-hover:scale-110 transition-transform duration-200">
+                        <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:scale-110 transition-transform duration-200">grid_view</span>
+                    </div>
+                    <span class="text-[9px] md:text-[10px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-200 leading-tight w-full break-words line-clamp-2">
+                        Semua Produk
+                    </span>
+                </a>
+
                 <?php foreach ($categories as $category): ?>
                 <?php
                     $categoryId = (int)($category['id'] ?? 0);

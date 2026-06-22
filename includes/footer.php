@@ -106,11 +106,11 @@
 </footer>
 
 <!-- Toast Notifications UI -->
-<div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] md:w-[360px] md:left-auto md:right-6 md:transform-none z-[200] bg-slate-800 text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 flex items-center gap-3.5 toast-notification">
+<div id="toast" class="fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-[360px] max-w-[calc(100vw-2rem)] md:max-w-none z-[200] bg-slate-800 text-white px-4 py-3.5 rounded-xl shadow-lg border border-white/10 flex items-center gap-3 toast-notification">
     <div id="toast-icon-container" class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
         <span id="toast-icon" class="material-symbols-outlined text-white text-md">done</span>
     </div>
-    <div class="flex-grow">
+    <div class="flex-grow min-w-0">
         <p class="text-body-sm font-bold text-white leading-tight" id="toast-title">Berhasil!</p>
         <p class="text-[11px] text-white/70 mt-0.5 leading-snug" id="toast-msg">Aksi berhasil dilakukan.</p>
     </div>
@@ -159,7 +159,7 @@
         }
 
         // Reset class lists
-        toast.className = "fixed top-6 left-1/2 -translate-x-1/2 w-[90%] md:w-[360px] md:left-auto md:right-6 md:transform-none z-[200] text-white px-5 py-3.5 rounded-xl shadow-lg border flex items-center gap-3.5 toast-notification";
+        toast.className = "fixed top-6 left-4 right-4 md:left-auto md:right-6 md:w-[360px] max-w-[calc(100vw-2rem)] md:max-w-none z-[200] text-white px-4 py-3.5 rounded-xl shadow-lg border flex items-center gap-3 toast-notification";
         toastIconContainer.className = "w-8 h-8 rounded-full flex items-center justify-center shrink-0";
         
         // Apply type-specific styles
@@ -201,7 +201,7 @@
 <!-- Floating WhatsApp Support Widget (Only visible on Home, Catalog, Categories, and Product Detail pages) -->
 <?php
 $currentPage = basename($_SERVER['PHP_SELF']);
-$allowedPages = ['index.php', 'product-detail.php', 'products.php', 'category.php', 'categories.php'];
+$allowedPages = ['index.php'];
 if (in_array($currentPage, $allowedPages)):
     $rawPhone = $storeSettings['phone'] ?? '082293924242';
     $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);

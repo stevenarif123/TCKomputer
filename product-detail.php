@@ -292,7 +292,8 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
             </div>
 
             <!-- Tabs (Description & Specifications) -->
-            <div class="space-y-4">
+            <div class="mt-6 bg-white border border-gray-200/80 rounded-xl p-4 md:p-6 shadow-sm">
+                <div class="space-y-4">
                 <div class="flex border-b border-gray-200 gap-6">
                     <button onclick="setTab(this, 'deskripsi')" class="spec-tab pb-2.5 text-xs active-tab font-bold text-secondary">Deskripsi</button>
                     <button onclick="setTab(this, 'spesifikasi')" class="spec-tab pb-2.5 text-xs text-on-surface-variant hover:text-secondary font-bold">Spesifikasi</button>
@@ -336,6 +337,7 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
                     <?php else: ?>
                         <p class="text-on-surface-variant italic">Tidak ada spesifikasi khusus.</p>
                     <?php endif; ?>
+                </div>
                 </div>
             </div>
         </section>
