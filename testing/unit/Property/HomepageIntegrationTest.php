@@ -191,7 +191,7 @@ class HomepageIntegrationTest extends TestCase
             'limit' => 12,
         ], $csrfToken, $flashSaleState['is_active'], [2, 4]);
 
-        $html .= '<section data-section="trust-strip">Pengiriman Aman Garansi Resmi Harga Bersaing Layanan Ramah</section>';
+        $html .= '<section data-section="trust-strip">Pengiriman Aman 100% Asli Harga Bersaing Layanan Ramah</section>';
         $html .= '<script>function startCountdowns(){} function prevSlide(e){} function nextSlide(e){} function goToSlide(index,e){}</script>';
         $html .= '</main>';
 
@@ -203,7 +203,7 @@ class HomepageIntegrationTest extends TestCase
         if ($banners === []) {
             return [[
                 'title' => 'Selamat Datang di TC Komputer',
-                'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan garansi resmi untuk workspace produktif Anda.',
+                'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan jaminan 100% asli untuk workspace produktif Anda.',
                 'image' => 'assets/images/placeholder.svg',
                 'link_url' => 'products',
                 'is_fallback' => true,

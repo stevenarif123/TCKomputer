@@ -50,7 +50,7 @@ if (!empty($banners)) {
     // Approved static store introduction fallback; no campaign/promo banner is fabricated.
     $slides[] = [
         'title' => 'Selamat Datang di TC Komputer',
-        'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan garansi resmi untuk workspace produktif Anda.',
+        'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan jaminan 100% asli untuk workspace produktif Anda.',
         'image' => 'assets/images/placeholder.svg',
         'link_url' => 'products',
         'is_promo' => false,
@@ -91,7 +91,7 @@ $bannerStyles = [
 <div class="py-2 animate-fade-in-up">
     <!-- Running Ticker / Info Promo Teks Berjalan -->
     <?php if (!empty($storeSettings['running_ticker'])): ?>
-    <div class="max-w-max-width mx-auto px-4 md:px-margin-desktop">
+    <div class="max-w-max-width mx-auto px-4 md:px-margin-desktop mt-3 md:mt-0">
         <div class="bg-secondary/5 border border-outline-variant/30 rounded-lg py-2.5 px-4 flex items-center gap-3 text-secondary text-xs select-none">
             <span class="material-symbols-outlined text-sm font-bold flex-shrink-0 animate-pulse">campaign</span>
             <div class="flex-grow overflow-hidden relative">
@@ -104,7 +104,7 @@ $bannerStyles = [
     <?php endif; ?>
 
     <!-- Modern Mobile Welcome Banner (Only on Mobile/Tablet) -->
-    <section class="max-w-max-width mx-auto px-4 lg:hidden mb-1">
+    <section class="max-w-max-width mx-auto px-4 lg:hidden mt-3 mb-3">
         <div class="bg-gradient-to-r from-secondary to-blue-700 rounded-xl p-5 text-white shadow-sm flex flex-col justify-between relative overflow-hidden select-none">
             <!-- Decorative background elements -->
             <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
@@ -113,7 +113,7 @@ $bannerStyles = [
             <div class="relative z-10">
                 <span class="inline-block bg-white/20 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">Selamat Datang</span>
                 <h2 class="text-lg font-black tracking-tight leading-tight">TC Komputer Toraja</h2>
-                <p class="text-xs text-white/80 mt-1 max-w-[90%] font-medium">Solusi Kebutuhan IT & Aksesoris Terpercaya dengan Garansi Resmi.</p>
+                <p class="text-xs text-white/80 mt-1 max-w-[90%] font-medium">Solusi Kebutuhan IT & Aksesoris Terpercaya dengan Jaminan 100% Asli.</p>
             </div>
             
             <div class="mt-4 flex items-center justify-between relative z-10">
@@ -129,7 +129,7 @@ $bannerStyles = [
     </section>
 
     <!-- Mobile Search Bar (Only on Mobile/Tablet) -->
-    <div class="block lg:hidden px-4 mb-2 animate-fade-in-up">
+    <div class="block lg:hidden px-4 mb-1 animate-fade-in-up">
         <form action="products" method="GET" class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
             <input name="search" class="w-full bg-white border border-outline-variant/80 rounded-xl pl-10 pr-4 py-3 text-body-sm focus:border-secondary transition-colors outline-none shadow-sm" placeholder="Cari hardware, printer, aksesoris..." type="search" value="<?= sanitizeOutput($_GET['search'] ?? '') ?>"/>
@@ -196,12 +196,12 @@ $bannerStyles = [
     </section>
 
     <!-- Discovery Rail: active categories only -->
-    <section id="categories" class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-2 md:py-3 animate-fade-in-up">
+    <section id="categories" class="max-w-max-width mx-auto px-4 md:px-margin-desktop pt-1 pb-1 md:py-3 animate-fade-in-up">
         <div class="bg-white overflow-hidden">
             <div class="flex items-center gap-3 overflow-x-auto hide-scrollbar px-3 py-3 md:px-4 md:py-3" aria-label="Jelajahi kategori">
                 <!-- Semua Produk category shortcut for mobile-first layout -->
-                <a class="category-card flex-shrink-0 w-[86px] md:w-[96px] py-1.5 px-2 flex flex-col items-center justify-center gap-1 group transition-all duration-200 hover:bg-secondary/[0.04]" href="products">
-                    <div class="w-10 h-10 md:w-12 md:h-12 bg-surface-container flex items-center justify-center rounded-full group-hover:scale-110 transition-transform duration-200">
+                <a class="category-card flex-shrink-0 w-[86px] md:w-[96px] py-1 px-2 flex flex-col items-center justify-center gap-1 group transition-all duration-200 hover:bg-secondary/[0.04] rounded-none" href="products">
+                    <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                         <span class="material-symbols-outlined text-secondary text-xl md:text-2xl group-hover:scale-110 transition-transform duration-200">grid_view</span>
                     </div>
                     <span class="text-[9px] md:text-[10px] font-bold text-center text-on-surface-variant group-hover:text-secondary transition-colors duration-200 leading-tight w-full break-words line-clamp-2">
@@ -230,7 +230,7 @@ $bannerStyles = [
                         $catIcon = 'handyman';
                     }
                 ?>
-                <a class="category-card flex-shrink-0 w-[86px] md:w-[96px] py-1.5 px-2 flex flex-col items-center justify-center gap-1 group transition-all duration-200 hover:bg-secondary/[0.04]" href="category?slug=<?= sanitizeOutput($catSlug) ?>" data-category-id="<?= $categoryId ?>">
+                <a class="category-card flex-shrink-0 w-[86px] md:w-[96px] py-1 px-2 flex flex-col items-center justify-center gap-1 group transition-all duration-200 hover:bg-secondary/[0.04] rounded-none" href="category?slug=<?= sanitizeOutput($catSlug) ?>" data-category-id="<?= $categoryId ?>">
                     <?php
                     $imageVal = $category['image'] ?? '';
                     $isUrl = (stripos($imageVal, 'http://') === 0 || stripos($imageVal, 'https://') === 0 || stripos($imageVal, '/') === 0);
@@ -256,7 +256,7 @@ $bannerStyles = [
 
     <!-- Popular Searches: source-backed chips from store settings -->
     <?php if (!empty($popularSearches)): ?>
-    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop py-1 md:py-2 animate-fade-in-up" aria-label="Pencarian populer">
+    <section class="max-w-max-width mx-auto px-4 md:px-margin-desktop pt-0 pb-1 md:py-2 animate-fade-in-up" aria-label="Pencarian populer">
         <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
             <span class="flex-shrink-0 text-[10px] md:text-xs font-black text-on-surface-variant flex items-center gap-1">
                 <span class="material-symbols-outlined text-[15px] text-secondary">trending_up</span>
@@ -347,7 +347,7 @@ $bannerStyles = [
             </div>
             <div class="flex items-center gap-2.5 min-w-0">
                 <span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0">verified_user</span>
-                <p class="text-xs md:text-sm font-extrabold text-on-background truncate">Garansi Resmi</p>
+                <p class="text-xs md:text-sm font-extrabold text-on-background truncate">100% Asli</p>
             </div>
             <div class="flex items-center gap-2.5 min-w-0">
                 <span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0">sell</span>

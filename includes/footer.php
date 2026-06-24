@@ -27,7 +27,7 @@
                 </p>
             <?php else: ?>
                 <p class="text-[11px] text-on-primary-container pr-md leading-relaxed hidden md:block">
-                    Toko komputer dan aksesoris IT terlengkap dengan harga transparan, produk berkualitas, dan bergaransi resmi.
+                    Toko komputer dan aksesoris IT terlengkap dengan harga transparan, produk berkualitas, dan 100% asli.
                 </p>
             <?php endif; ?>
             <?php if (!empty($storeSettings['address'])): ?>

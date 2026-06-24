@@ -258,4 +258,22 @@ function applySecurityHeaders(): void
         "form-action 'self'",
     ]);
     header("Content-Security-Policy: {$csp}");
+
+    // Start output buffering to strip HTML comments from final output
+    if (!in_array('cleanHtmlComments', ob_list_handlers())) {
+        ob_start('cleanHtmlComments');
+    }
 }
+
+/**
+ * Strip HTML comments from the output buffer before it is sent to the browser.
+ * This keeps comments in source code but prevents them from leaking to inspect element.
+ *
+ * @param string $buffer The HTML output buffer.
+ * @return string The cleaned HTML output.
+ */
+function cleanHtmlComments(string $buffer): string
+{
+    return preg_replace('/<!--(?!\[if)[\s\S]*?-->/', '', $buffer);
+}
+

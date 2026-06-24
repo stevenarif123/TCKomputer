@@ -20,7 +20,7 @@ class HomepageNoFakeMarketplaceDataPropertyTest extends TestCase
     /** @var array<int,string> */
     private const STATIC_TRUST_COPY = [
         'Pengiriman aman',
-        'Garansi resmi',
+        '100% asli',
         'Harga kompetitif',
         'Layanan ramah',
     ];

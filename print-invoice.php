@@ -5,6 +5,11 @@
  * Automatically triggers window.print() on load.
  */
 
+// Security hardening & output buffering for comment stripping
+require_once __DIR__ . '/config/security.php';
+configureSecureSession();
+applySecurityHeaders();
+
 // Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -687,7 +692,7 @@ if ($serviceFee < 0) {
             <strong>Catatan Toko:</strong>
             <ul style="margin: 4px 0; padding-left: 15px;">
                 <li>Pesanan ini adalah bukti transaksi sah dari <?= htmlspecialchars($storeName) ?>.</li>
-                <li>Simpan nomor pesanan Anda untuk keperluan garansi resmi distributor dan bantuan teknis.</li>
+                <li>Simpan nomor pesanan Anda untuk keperluan klaim garansi toko dan bantuan teknis.</li>
                 <li>Biaya-biaya yang ditagihkan oleh <?= htmlspecialchars($storeName) ?> sudah termasuk PPN (jika ada).</li>
             </ul>
         </div>

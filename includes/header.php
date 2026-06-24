@@ -19,6 +19,9 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../config/analytics.php';
 
+// Generate CSRF token for buyer actions
+$csrfToken = generateCSRFToken();
+
 // Fetch store settings
 $pdo = getDBConnection();
 $stmtSettings = $pdo->query("SELECT * FROM store_settings LIMIT 1");
@@ -553,6 +556,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         
         <!-- Form 1: Username/Phone Login with Password -->
         <form id="login-form" onsubmit="loginUser(event)" class="p-5 space-y-sm">
+            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
             <div class="space-y-1">
                 <label for="login_identifier" class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Username / Nomor Telepon <span class="text-error">*</span></label>
                 <input type="text" id="login_identifier" name="login_identifier" placeholder="Contoh: steven atau 082293924242" class="w-full px-3 py-2 border border-outline-variant/80 rounded-lg text-body-sm focus:border-secondary outline-none bg-surface-container-lowest" required>
@@ -569,6 +573,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         <!-- Form 2: Register New Account -->
         <form id="register-form" onsubmit="registerUser(event)" class="p-5 space-y-sm hidden max-h-[70vh] overflow-y-auto hide-scrollbar">
+            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
             <div class="space-y-1">
                 <label for="register_username" class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block">Username <span class="text-error">*</span></label>
                 <input type="text" id="register_username" name="username" placeholder="Contoh: steven_lisu" class="w-full px-3 py-2 border border-outline-variant/80 rounded-lg text-body-sm focus:border-secondary outline-none bg-surface-container-lowest" required minlength="3" maxlength="30">
@@ -642,6 +647,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <!-- Form 3: Edit Profile (When Logged In) -->
         <?php if ($profile): ?>
         <form id="profile-form" onsubmit="saveProfile(event)" class="p-5 space-y-sm max-h-[70vh] overflow-y-auto hide-scrollbar">
+            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
             <div class="space-y-1">
                 <label for="modal_profile_username_readonly" class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider block">Username (Tidak Bisa Diubah)</label>
                 <input type="text" id="modal_profile_username_readonly" class="w-full px-3 py-2 border border-outline-variant/50 rounded-lg text-body-sm bg-surface-container-low/75 text-on-surface-variant/80 outline-none" value="<?= sanitizeOutput($profile['username'] ?? '') ?>" readonly>

@@ -253,7 +253,7 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
             <div id="trust-badge-strip" class="flex flex-wrap gap-2 text-[10px] font-bold text-on-surface-variant my-2 lg:my-3">
                 <div class="flex items-center gap-1 bg-green-50 text-green-700 px-2.5 py-1.5 rounded-full border border-green-100 whitespace-nowrap">
                     <span class="material-symbols-outlined text-[14px]">verified_user</span>
-                    <span>100% Ori &amp; Garansi Resmi</span>
+                    <span>100% Asli &amp; Bergaransi</span>
                 </div>
                 <div class="flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-full border border-blue-100 whitespace-nowrap">
                     <span class="material-symbols-outlined text-[14px]">inventory_2</span>
@@ -279,7 +279,7 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
                 <?php endif; ?>
                 <div class="flex items-center gap-1">
                     <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
-                    <span>Garansi Resmi</span>
+                    <span>Garansi Toko</span>
                 </div>
                 <div class="flex items-center gap-1">
                     <span class="material-symbols-outlined text-[16px] text-secondary">package_2</span>
