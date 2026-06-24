@@ -385,11 +385,7 @@ if ($order) {
                 
                 <!-- Quick Actions -->
                 <div class="flex flex-col gap-sm quick-actions">
-                    <button onclick="toggleChatDrawer()" class="w-full bg-secondary hover:bg-secondary-container text-white py-3 rounded-lg font-bold text-label-md flex items-center justify-center gap-xs transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">chat</span>
-                        Hubungi Admin / CS
-                    </button>
-                    <a href="print-invoice?code=<?= urlencode($order['order_code']) ?>&phone=<?= urlencode($order['buyer_phone']) ?>" target="_blank" class="print-btn w-full border border-secondary text-secondary hover:bg-secondary-fixed/10 py-3 rounded-lg font-bold text-label-md flex items-center justify-center gap-xs transition-colors text-center">
+                    <a href="print-invoice?code=<?= urlencode($order['order_code']) ?>&phone=<?= urlencode($order['buyer_phone']) ?>" target="_blank" class="print-btn w-full bg-secondary hover:bg-secondary-container text-white py-3 rounded-lg font-bold text-label-md flex items-center justify-center gap-xs transition-colors text-center">
                         <span class="material-symbols-outlined text-[20px]">print</span>
                         Cetak Invoice
                     </a>
@@ -398,109 +394,5 @@ if ($order) {
         </div>
     <?php endif; ?>
 </div>
-
-<!-- Chat Support Drawer Overlay (Slides from right) -->
-<div id="chat-drawer" class="fixed inset-0 z-50 bg-black/50 flex justify-end hidden opacity-0 transition-opacity duration-300" onclick="toggleChatDrawer()">
-    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col translate-x-full transition-transform duration-300" id="chat-drawer-container" onclick="event.stopPropagation()">
-        <!-- Chat Header -->
-        <div class="bg-primary-container p-4 text-white flex items-center justify-between">
-            <div class="flex items-center gap-sm">
-                <div class="w-10 h-10 rounded bg-secondary flex items-center justify-center text-white relative">
-                    <span class="material-symbols-outlined">support_agent</span>
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-tertiary-fixed border-2 border-primary-container rounded"></span>
-                </div>
-                <div>
-                    <h3 class="text-body-md font-bold">Customer Support AI</h3>
-                    <p class="text-[10px] text-white/60">Online • Siap membantu</p>
-                </div>
-            </div>
-            <button onclick="toggleChatDrawer()" class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center transition-colors">
-                <span class="material-symbols-outlined text-white">close</span>
-            </button>
-        </div>
-        <!-- Chat Body -->
-        <div id="chat-stream" class="flex-grow p-4 overflow-y-auto space-y-md bg-surface-container-low/30">
-            <div class="flex gap-2 items-start max-w-[85%]">
-                <div class="w-7 h-7 rounded bg-secondary text-white flex items-center justify-center flex-shrink-0 text-xs">
-                    <span class="material-symbols-outlined text-sm">support_agent</span>
-                </div>
-                <div class="bg-white border border-outline-variant/40 p-3 rounded-lg rounded-tl-none border border-outline-variant/30">
-                    <p class="text-body-sm text-on-surface">Halo! Ada yang bisa saya bantu terkait pesanan Anda?</p>
-                </div>
-            </div>
-        </div>
-        <!-- Chat Input Form -->
-        <form onsubmit="sendMessage(event)" class="p-4 border-t border-outline-variant/40 bg-white flex gap-sm">
-            <input id="chat-input" required class="flex-grow border border-outline-variant/60 rounded-lg px-4 py-2.5 text-body-sm focus:border-secondary transition-colors outline-none" placeholder="Tulis pesan Anda..."/>
-            <button type="submit" class="bg-secondary text-white w-10 h-10 rounded-lg flex items-center justify-center hover:bg-secondary/90 transition-colors">
-                <span class="material-symbols-outlined">send</span>
-            </button>
-        </form>
-    </div>
-</div>
-
-<script>
-    // Support Chat Drawer toggle
-    function toggleChatDrawer() {
-        const drawer = document.getElementById('chat-drawer');
-        const container = document.getElementById('chat-drawer-container');
-        const isHidden = drawer.classList.contains('hidden');
-        
-        if (isHidden) {
-            drawer.classList.remove('hidden');
-            setTimeout(() => {
-                drawer.classList.remove('opacity-0');
-                container.classList.remove('translate-x-full');
-            }, 10);
-        } else {
-            drawer.classList.add('opacity-0');
-            container.classList.add('translate-x-full');
-            setTimeout(() => {
-                drawer.classList.add('hidden');
-            }, 300);
-        }
-    }
-
-    // Support Chat - kirim pesan
-    function sendMessage(event) {
-        event.preventDefault();
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-
-        const stream = document.getElementById('chat-stream');
-        
-        // Append user message
-        const userBubble = document.createElement('div');
-        userBubble.className = "flex gap-2 items-start justify-end ml-auto max-w-[85%]";
-        userBubble.innerHTML = `
-            <div class="bg-secondary text-white p-3 rounded-lg rounded-tr-none">
-                <p class="text-body-sm">${text}</p>
-            </div>
-            <div class="w-7 h-7 rounded bg-surface-container flex items-center justify-center flex-shrink-0 text-xs border border-outline-variant">
-                <span class="material-symbols-outlined text-sm">person</span>
-            </div>
-        `;
-        stream.appendChild(userBubble);
-        input.value = "";
-        stream.scrollTop = stream.scrollHeight;
-
-        // Pesan balasan otomatis CS
-        setTimeout(() => {
-            const botBubble = document.createElement('div');
-            botBubble.className = "flex gap-2 items-start max-w-[85%]";
-            botBubble.innerHTML = `
-                <div class="w-7 h-7 rounded bg-secondary text-white flex items-center justify-center flex-shrink-0 text-xs">
-                    <span class="material-symbols-outlined text-sm">support_agent</span>
-                </div>
-                <div class="bg-white border border-outline-variant/40 p-3 rounded-lg rounded-tl-none border border-outline-variant/30">
-                    <p class="text-body-sm text-on-surface">Pesan Anda "${text}" telah kami terima. Tim admin kami akan segera merespon detail Anda secepatnya.</p>
-                </div>
-            `;
-            stream.appendChild(botBubble);
-            stream.scrollTop = stream.scrollHeight;
-        }, 1200);
-    }
-</script>
 
 <?php include 'includes/footer.php'; ?>
