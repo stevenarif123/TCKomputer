@@ -88,6 +88,7 @@ $redirectUrl = $_SERVER['HTTP_REFERER'] ?? 'product-detail?id=' . $productId;
 
 if (isset($_POST['buy_now']) && $_POST['buy_now'] == 1) {
     $_SESSION['checkout_items'] = [$productId];
+    $redirectUrl = '../cart?buy_now=1';
 }
 
 if (isset($_SESSION['cart'][$productId])) {

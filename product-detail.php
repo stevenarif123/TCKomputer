@@ -792,32 +792,31 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
         document.getElementById('shipping-cost').innerHTML = `${formatCurrency(cost)} <span class="text-body-sm font-semibold text-on-surface-variant">(Lokal)</span>`;
     }
 
-    // Buy Now via AJAX then redirect
+    // Buy Now - submit form normally with buy_now = 1
     function buyNow() {
         const form = document.getElementById('add-to-cart-form');
         if (!form) return;
-        submitBuyNowForm(form);
+        submitBuyNowForm(form, 'buy-now-input');
     }
 
     function buyNowMobile() {
         const form = document.getElementById('mobile-add-to-cart-form');
         if (!form) return;
-        submitBuyNowForm(form);
+        submitBuyNowForm(form, 'mobile-buy-now-input');
     }
 
-    function submitBuyNowForm(form) {
-        const formData = new FormData(form);
-        formData.append('buy_now', '1');
+    function submitBuyNowForm(form, inputId) {
+        let buyNowInput = document.getElementById(inputId);
+        if (!buyNowInput) {
+            buyNowInput = document.createElement('input');
+            buyNowInput.type = 'hidden';
+            buyNowInput.id = inputId;
+            buyNowInput.name = 'buy_now';
+            form.appendChild(buyNowInput);
+        }
+        buyNowInput.value = '1';
         showToast("Memproses", "Menambahkan ke keranjang belanja...");
-        
-        fetch('actions/cart-add.php', {
-            method: 'POST',
-            body: formData
-        }).then(() => {
-            window.location.href = 'cart.php?buy_now=1';
-        }).catch(() => {
-            window.location.href = 'cart.php?buy_now=1';
-        });
+        form.submit();
     }
 
     // Purchase Bottom Sheet logic
