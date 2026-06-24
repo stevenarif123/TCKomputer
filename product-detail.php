@@ -186,13 +186,6 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
                         <span class="material-symbols-outlined font-bold">chevron_right</span>
                     </button>
                 <?php endif; ?>
-
-                <!-- Hover Lens Indicator overlay -->
-                <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-center justify-center z-20">
-                    <span class="bg-white/95 text-secondary p-3 rounded-full border border-gray-200 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-xl">zoom_in</span>
-                    </span>
-                </div>
             </div>
             
             <!-- Gallery Thumbnails -->
@@ -343,7 +336,7 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
         </section>
         
         <!-- Right Column: Sticky Purchase Box (lg:col-span-3) -->
-        <section class="lg:col-span-3 lg:sticky lg:top-24">
+        <section class="hidden lg:block lg:col-span-3 lg:sticky lg:top-24">
             <div class="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
                 <h3 class="text-sm font-extrabold text-on-background border-b border-gray-100 pb-2">Atur Pembelian</h3>
                 
@@ -495,11 +488,11 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
         </div>
         <!-- Action Buttons -->
         <div class="flex gap-2 flex-1 max-w-xs">
-            <button type="button" onclick="submitCartFromMobile()" 
+            <button type="button" onclick="openPurchaseSheet()" 
                 class="flex-1 bg-white border-2 border-secondary text-secondary py-2.5 rounded-lg font-bold text-xs">
                 Keranjang
             </button>
-            <button type="button" onclick="buyNow()" 
+            <button type="button" onclick="openPurchaseSheet()" 
                 class="flex-1 bg-secondary text-white py-2.5 rounded-lg font-bold text-xs">
                 Beli Sekarang
             </button>
@@ -520,6 +513,72 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
     </div>
 </div>
 <?php endif; ?>
+
+<!-- Mobile Purchase Bottom Sheet -->
+<div id="purchase-sheet-overlay" class="fixed inset-0 z-[60] bg-black/50 hidden opacity-0 transition-opacity duration-300" onclick="closePurchaseSheet()"></div>
+<div id="purchase-sheet" class="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-2xl transform translate-y-full transition-transform duration-300 lg:hidden flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between p-4 border-b border-gray-100">
+        <h3 class="font-bold text-on-background">Atur Pembelian</h3>
+        <button type="button" onclick="closePurchaseSheet()" class="text-on-surface-variant hover:text-on-background w-8 h-8 flex items-center justify-center rounded-full bg-slate-100">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+    <div class="p-4 overflow-y-auto space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-1.5">
+                <?php if ($product['status'] === 'ready' && $product['stock'] > 0): ?>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded font-bold text-[10px]">
+                        Ready (<?= (int)$product['stock'] ?>)
+                    </span>
+                <?php elseif ($product['status'] === 'po'): ?>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-bold text-[10px]">
+                        Pre-Order
+                    </span>
+                <?php else: ?>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded font-bold text-[10px]">
+                        Stok Habis
+                    </span>
+                <?php endif; ?>
+            </div>
+            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded font-extrabold text-on-surface-variant">Kondisi: <?= $product['condition_type'] === 'new' ? 'Baru' : 'Bekas' ?></span>
+        </div>
+        <?php if ($product['status'] === 'ready' || $product['status'] === 'po'): ?>
+        <div class="space-y-2">
+            <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Jumlah</label>
+                <div class="flex items-center border border-gray-200 rounded-lg p-1 bg-white justify-between w-28">
+                    <button type="button" onclick="decrementQty()" class="w-7 h-7 rounded-md hover:bg-slate-100 flex items-center justify-center font-bold text-on-surface transition-colors select-none">
+                        <span class="material-symbols-outlined text-sm">remove</span>
+                    </button>
+                    <span id="mobile-qty-indicator" class="w-8 text-center font-bold text-xs text-on-background">1</span>
+                    <button type="button" onclick="incrementQty()" class="w-7 h-7 rounded-md hover:bg-slate-100 flex items-center justify-center font-bold text-on-surface transition-colors select-none">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-baseline justify-between pt-2 border-t border-gray-100">
+            <span class="text-[11px] font-bold text-on-surface-variant uppercase">Subtotal</span>
+            <span id="mobile-sheet-total-price" class="text-sm font-black text-secondary"><?= formatRupiah($activePrice) ?></span>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php if ($product['status'] === 'ready' || $product['status'] === 'po'): ?>
+    <div class="p-4 border-t border-gray-100 bg-white">
+        <form id="mobile-add-to-cart-form" action="actions/cart-add" method="POST" class="flex gap-2">
+            <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
+            <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+            <input type="hidden" id="mobile-form-quantity" name="quantity" value="1">
+            <button type="submit" class="flex-1 bg-white border-2 border-secondary text-secondary py-2.5 rounded-lg font-bold text-xs">
+                Keranjang
+            </button>
+            <button type="button" onclick="buyNowMobile()" class="flex-1 bg-secondary text-white py-2.5 rounded-lg font-bold text-xs">
+                Beli Sekarang
+            </button>
+        </form>
+    </div>
+    <?php endif; ?>
+</div>
 
 <!-- Lightbox Modal Overlay UI -->
 <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 md:p-8 hidden opacity-0" onclick="closeLightbox()">
@@ -677,10 +736,27 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
     }
 
     function updateCalculations() {
-        document.getElementById('qty-indicator').textContent = qty;
-        document.getElementById('form-quantity').value = qty;
+        const desktopQty = document.getElementById('qty-indicator');
+        if (desktopQty) desktopQty.textContent = qty;
+        
+        const mobileQty = document.getElementById('mobile-qty-indicator');
+        if (mobileQty) mobileQty.textContent = qty;
+        
+        const desktopFormQty = document.getElementById('form-quantity');
+        if (desktopFormQty) desktopFormQty.value = qty;
+        
+        const mobileFormQty = document.getElementById('mobile-form-quantity');
+        if (mobileFormQty) mobileFormQty.value = qty;
+
         const total = currentPrice * qty;
-        document.getElementById('total-price').textContent = formatCurrency(total);
+        const formattedTotal = formatCurrency(total);
+        
+        const desktopTotal = document.getElementById('total-price');
+        if (desktopTotal) desktopTotal.textContent = formattedTotal;
+        
+        const mobileSheetTotal = document.getElementById('mobile-sheet-total-price');
+        if (mobileSheetTotal) mobileSheetTotal.textContent = formattedTotal;
+        
         updateMobileCtaPrice();
     }
 
@@ -720,26 +796,55 @@ $discountPercentage = $isPromo ? round((($product['selling_price'] - $product['p
     function buyNow() {
         const form = document.getElementById('add-to-cart-form');
         if (!form) return;
+        submitBuyNowForm(form);
+    }
+
+    function buyNowMobile() {
+        const form = document.getElementById('mobile-add-to-cart-form');
+        if (!form) return;
+        submitBuyNowForm(form);
+    }
+
+    function submitBuyNowForm(form) {
         const formData = new FormData(form);
-        
+        formData.append('buy_now', '1');
         showToast("Memproses", "Menambahkan ke keranjang belanja...");
         
         fetch('actions/cart-add.php', {
             method: 'POST',
             body: formData
         }).then(() => {
-            window.location.href = 'checkout.php';
+            window.location.href = 'cart.php?buy_now=1';
         }).catch(() => {
-            window.location.href = 'checkout.php';
+            window.location.href = 'cart.php?buy_now=1';
         });
     }
 
-    // Submit cart from mobile CTA
-    function submitCartFromMobile() {
-        const form = document.getElementById('add-to-cart-form');
-        if (!form) return;
-        document.getElementById('form-quantity').value = qty;
-        form.submit();
+    // Purchase Bottom Sheet logic
+    function openPurchaseSheet() {
+        const overlay = document.getElementById('purchase-sheet-overlay');
+        const sheet = document.getElementById('purchase-sheet');
+        
+        overlay.classList.remove('hidden');
+        // A small delay to allow display block to apply before animating opacity
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0');
+            overlay.classList.add('opacity-100');
+            sheet.classList.remove('translate-y-full');
+        }, 10);
+    }
+
+    function closePurchaseSheet() {
+        const overlay = document.getElementById('purchase-sheet-overlay');
+        const sheet = document.getElementById('purchase-sheet');
+        
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0');
+        sheet.classList.add('translate-y-full');
+        
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
     }
 
     function startCountdown() {

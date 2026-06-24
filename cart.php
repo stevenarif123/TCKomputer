@@ -7,6 +7,11 @@
 
 require_once __DIR__ . '/includes/header.php';
 
+// If not coming from a "Buy Now" direct flow, clear the checkout selection so all items are selected by default
+if (!isset($_GET['buy_now'])) {
+    unset($_SESSION['checkout_items']);
+}
+
 // Generate CSRF token
 $csrfToken = generateCSRFToken();
 
@@ -30,8 +35,25 @@ if (!empty($cart)) {
             $isPromo = $isGlobalFlashSaleActive && !empty($product['promo_active']) && !empty($product['promo_price']) && $product['promo_price'] > 0 && isset($product['promo_stock']) && $product['promo_stock'] > 0;
             $currentPrice = $isPromo ? (int)$product['promo_price'] : (int)$product['selling_price'];
             $quantity = (int)$item['quantity'];
+
+            // Cap quantity for ready products if it exceeds stock
+            if ($product['status'] === 'ready' && $product['stock'] > 0 && $quantity > $product['stock']) {
+                $quantity = (int)$product['stock'];
+                $_SESSION['cart'][$productId]['quantity'] = $quantity;
+            }
+
+            $isOutOfStock = ($product['status'] === 'habis') || ($product['status'] === 'ready' && $product['stock'] <= 0);
             $subtotal = $currentPrice * $quantity;
-            $cartTotal += $subtotal;
+
+            // Determine if checked
+            $isChecked = false;
+            if (!$isOutOfStock) {
+                if (isset($_SESSION['checkout_items'])) {
+                    $isChecked = in_array((int)$product['id'], $_SESSION['checkout_items']);
+                } else {
+                    $isChecked = true;
+                }
+            }
 
             $cartItems[] = [
                 'product_id' => (int)$product['id'],
@@ -44,14 +66,27 @@ if (!empty($cart)) {
                 'subtotal' => $subtotal,
                 'stock' => (int)$product['stock'],
                 'status' => $product['status'],
+                'is_out_of_stock' => $isOutOfStock,
+                'is_checked' => $isChecked,
             ];
         }
     }
-    
-    // Evaluate Discounts
+
+    // Now calculate checked items totals
+    $checkedItems = [];
+    $cartCount = 0;
+    foreach ($cartItems as $item) {
+        if ($item['is_checked']) {
+            $cartTotal += $item['subtotal'];
+            $cartCount += $item['quantity'];
+            $checkedItems[] = $item;
+        }
+    }
+
+    // Evaluate Discounts on checked items
     require_once __DIR__ . '/promotion/DiscountEngine.php';
     $discountEngine = new DiscountEngine($pdo);
-    $promoResults = $discountEngine->applyDiscounts($cartItems, 0); // Cart doesn't know shipping yet
+    $promoResults = $discountEngine->applyDiscounts($checkedItems, 0); // Cart doesn't know shipping yet
     $discountAmount = $promoResults['discount_amount'];
     $appliedPromos = $promoResults['applied_promotions'];
     $freeItemId = $promoResults['free_item_id'];
@@ -92,8 +127,21 @@ if (!empty($cart)) {
             <!-- Left side: Cart Items List -->
             <div class="lg:col-span-8 space-y-sm">
                 <!-- Select All -->
+                <?php
+                $hasActiveItems = false;
+                $allActiveChecked = true;
+                foreach ($cartItems as $item) {
+                    if (!$item['is_out_of_stock']) {
+                        $hasActiveItems = true;
+                        if (!$item['is_checked']) {
+                            $allActiveChecked = false;
+                        }
+                    }
+                }
+                $isSelectAllChecked = $hasActiveItems && $allActiveChecked;
+                ?>
                 <div class="bg-white p-3 sm:p-4 rounded-xl border border-outline-variant/40 flex items-center gap-3">
-                    <input type="checkbox" id="select-all" class="w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer" checked>
+                    <input type="checkbox" id="select-all" class="w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer" <?= $isSelectAllChecked ? 'checked' : '' ?>>
                     <label for="select-all" class="font-bold text-body-sm sm:text-body-md text-on-background cursor-pointer select-none">Pilih Semua Produk</label>
                 </div>
 
@@ -105,7 +153,7 @@ if (!empty($cart)) {
                     <div class="flex gap-3 sm:gap-4 w-full">
                         <!-- Checkbox & Image Wrapper -->
                         <div class="flex items-center gap-3 sm:gap-4 shrink-0">
-                            <input type="checkbox" name="selected_cart_items[]" value="<?= (int)$cartItem['product_id'] ?>" class="cart-item-checkbox w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer shrink-0" checked>
+                            <input type="checkbox" name="selected_cart_items[]" value="<?= (int)$cartItem['product_id'] ?>" class="cart-item-checkbox w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 shrink-0" <?= $cartItem['is_out_of_stock'] ? 'disabled' : '' ?> <?= $cartItem['is_checked'] ? 'checked' : '' ?>>
                             <a href="product-detail?slug=<?= sanitizeOutput($cartItem['slug'] ?? '') ?>" class="w-20 h-20 bg-surface-container rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-outline-variant/30 p-2 bg-white hover:border-secondary transition-colors">
                                 <img class="w-full h-full object-contain" src="<?= $itemImg ?>" alt="<?= sanitizeOutput($cartItem['name']) ?>"/>
                             </a>
@@ -114,6 +162,9 @@ if (!empty($cart)) {
                         <!-- Details -->
                         <div class="flex-grow min-w-0 flex flex-col justify-center">
                             <a href="product-detail?slug=<?= sanitizeOutput($cartItem['slug'] ?? '') ?>" class="font-bold text-body-sm sm:text-body-md text-on-background line-clamp-2 sm:truncate leading-tight mb-1 sm:mb-0 hover:text-secondary transition-colors"><?= sanitizeOutput($cartItem['name']) ?></a>
+                            <?php if ($cartItem['is_out_of_stock']): ?>
+                                <span class="inline-block self-start px-2 py-0.5 text-[9px] font-bold bg-error/10 text-error rounded-md mt-1 mb-0.5">Stok Habis / Tidak Tersedia</span>
+                            <?php endif; ?>
                             <p class="text-body-sm text-secondary font-black mb-0.5 sm:mt-0.5"><?= formatRupiah($cartItem['price']) ?></p>
                             <p class="text-[10px] sm:text-[11px] text-on-surface-variant">Stok: <?= (int)$cartItem['stock'] ?> unit</p>
                         </div>
@@ -126,9 +177,9 @@ if (!empty($cart)) {
                             <form action="actions/cart-update" method="POST" class="flex items-center border border-outline-variant rounded-lg bg-white p-1 shrink-0">
                                 <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($csrfToken) ?>">
                                 <input type="hidden" name="product_id" value="<?= (int)$cartItem['product_id'] ?>">
-                                <button type="submit" name="quantity" value="<?= $cartItem['quantity'] - 1 ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors" <?= $cartItem['quantity'] <= 1 ? 'disabled' : '' ?>>-</button>
+                                <button type="submit" name="quantity" value="<?= $cartItem['quantity'] - 1 ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors disabled:opacity-50" <?= ($cartItem['is_out_of_stock'] || $cartItem['quantity'] <= 1) ? 'disabled' : '' ?>>-</button>
                                 <span class="w-8 sm:w-10 text-center font-bold text-xs sm:text-body-sm"><?= (int)$cartItem['quantity'] ?></span>
-                                <button type="submit" name="quantity" value="<?= $cartItem['quantity'] + 1 ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors" <?= $cartItem['quantity'] >= $cartItem['stock'] ? 'disabled' : '' ?>>+</button>
+                                <button type="submit" name="quantity" value="<?= $cartItem['quantity'] + 1 ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md hover:bg-surface-container flex items-center justify-center font-bold text-on-surface transition-colors disabled:opacity-50" <?= ($cartItem['is_out_of_stock'] || $cartItem['quantity'] >= $cartItem['stock']) ? 'disabled' : '' ?>>+</button>
                             </form>
                         </div>
 
@@ -287,7 +338,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function() {
-            itemCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            itemCheckboxes.forEach(cb => {
+                if (!cb.disabled) {
+                    cb.checked = selectAllCheckbox.checked;
+                }
+            });
             updateSummary();
         });
     }
@@ -295,7 +350,8 @@ document.addEventListener('DOMContentLoaded', function() {
     itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', function() {
             if (selectAllCheckbox) {
-                selectAllCheckbox.checked = Array.from(itemCheckboxes).every(c => c.checked);
+                const activeCbs = Array.from(itemCheckboxes).filter(c => !c.disabled);
+                selectAllCheckbox.checked = activeCbs.length > 0 && activeCbs.every(c => c.checked);
             }
             updateSummary();
         });
