@@ -10,6 +10,9 @@ session_start();
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
 
+$pdo = getDBConnection();
+cleanupCartSession($pdo);
+
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('../checkout', 'Metode request tidak valid.', 'error');
@@ -88,7 +91,6 @@ if (!empty($errors)) {
 // ============================================
 // Database Validation & Order Processing
 // ============================================
-$pdo = getDBConnection();
 
 // Validate shipping area exists and is active
 $stmt = $pdo->prepare("SELECT id, cost FROM shipping_areas WHERE id = ? AND is_active = 1");
@@ -131,18 +133,34 @@ foreach ($checkoutItems as $productId) {
 
     // Product must exist and be active
     if (!$product) {
+        unset($_SESSION['cart'][$productId]);
+        if (($key = array_search($productId, $_SESSION['checkout_items'])) !== false) {
+            unset($_SESSION['checkout_items'][$key]);
+            $_SESSION['checkout_items'] = array_values($_SESSION['checkout_items']);
+        }
         $_SESSION['checkout_errors'] = ['Produk tidak tersedia: ' . sanitizeOutput($item['name'])];
         redirect('../checkout');
     }
 
     // Product must be purchasable (ready or po, not habis)
     if ($product['status'] === 'habis') {
+        if (($key = array_search($productId, $_SESSION['checkout_items'])) !== false) {
+            unset($_SESSION['checkout_items'][$key]);
+            $_SESSION['checkout_items'] = array_values($_SESSION['checkout_items']);
+        }
         $_SESSION['checkout_errors'] = ['Produk habis: ' . sanitizeOutput($product['name'])];
         redirect('../checkout');
     }
 
     // For ready products, check stock sufficiency
     if ($product['status'] === 'ready' && $product['stock'] < $item['quantity']) {
+        $_SESSION['cart'][$productId]['quantity'] = (int)$product['stock'];
+        if ($product['stock'] <= 0) {
+            if (($key = array_search($productId, $_SESSION['checkout_items'])) !== false) {
+                unset($_SESSION['checkout_items'][$key]);
+                $_SESSION['checkout_items'] = array_values($_SESSION['checkout_items']);
+            }
+        }
         $_SESSION['checkout_errors'] = ['Stok tidak cukup untuk: ' . sanitizeOutput($product['name']) . ' (tersedia: ' . $product['stock'] . ')'];
         redirect('../checkout');
     }
@@ -175,7 +193,8 @@ $appliedPromotions = !empty($promoResults['applied_promotions']) ? implode(', ',
 $freeItemId = $promoResults['free_item_id'];
 $finalShippingCost = $promoResults['new_shipping_cost'];
 
-$total = $subtotal - $discountAmount + $finalShippingCost;
+$serviceFee = 1000; // Biaya Layanan
+$total = $subtotal - $discountAmount + $finalShippingCost + $serviceFee;
 
 // ============================================
 // Create Order in Transaction

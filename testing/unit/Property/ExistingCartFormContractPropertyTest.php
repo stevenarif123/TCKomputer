@@ -31,9 +31,9 @@ class ExistingCartFormContractPropertyTest extends TestCase
         $this->assertStringContainsString('name="product_id"', $productDetailContent);
         $this->assertStringContainsString('name="quantity"', $productDetailContent);
         
-        // Verify the submitCartFromMobile javascript form submission works correctly on that form in product-detail.php
+        // Verify the javascript form submission works correctly on that form in product-detail.php
         $this->assertStringContainsString('document.getElementById(\'add-to-cart-form\')', $productDetailContent);
-        $this->assertStringContainsString('form.submit()', $productDetailContent);
+        $this->assertStringContainsString('fetch(\'actions/cart-add.php\'', $productDetailContent);
 
         // Verify products.php
         $this->assertMatchesRegularExpression('/action="actions\/cart-add(\.php)?"/', $productsContent);

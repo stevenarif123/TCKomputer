@@ -6,7 +6,11 @@
  */
 
 session_start();
+require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+
+$pdo = getDBConnection();
+cleanupCartSession($pdo);
 
 // Only accept POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -34,8 +38,43 @@ foreach ($selectedItems as $id) {
     }
 }
 
+if (!empty($validIds)) {
+    $inClause = implode(',', array_fill(0, count($validIds), '?'));
+    try {
+        $stmt = $pdo->prepare("SELECT id, status, stock FROM products WHERE id IN ($inClause) AND is_active = 1");
+        $stmt->execute($validIds);
+        $products = $stmt->fetchAll(PDO::FETCH_UNIQUE);
+
+        $finalValidIds = [];
+        foreach ($validIds as $id) {
+            if (isset($products[$id])) {
+                $prod = $products[$id];
+                $quantity = $_SESSION['cart'][$id]['quantity'];
+
+                // Validate status and stock
+                if ($prod['status'] !== 'habis') {
+                    if ($prod['status'] === 'ready') {
+                        if ($prod['stock'] <= 0) {
+                            // Skip out of stock
+                            continue;
+                        }
+                        if ($quantity > $prod['stock']) {
+                            // Cap quantity to stock
+                            $_SESSION['cart'][$id]['quantity'] = (int)$prod['stock'];
+                        }
+                    }
+                    $finalValidIds[] = $id;
+                }
+            }
+        }
+        $validIds = $finalValidIds;
+    } catch (Exception $e) {
+        // Fallback: keep validIds as is if query fails
+    }
+}
+
 if (empty($validIds)) {
-    redirect('../cart', 'Produk yang dipilih tidak valid atau tidak ada di keranjang', 'error');
+    redirect('../cart', 'Produk yang dipilih tidak valid, habis, atau tidak tersedia', 'error');
 }
 
 // Store the valid selected items into session

@@ -1273,3 +1273,63 @@ function renderHomepageProductRail(
     <?php
     return trim((string)ob_get_clean());
 }
+
+/**
+ * Clean up the session cart and checkout items by removing products that:
+ * 1. Do not exist in the database.
+ * 2. Are not active (is_active = 0).
+ * Also removes inactive or deleted products from checkout items.
+ *
+ * @param PDO $pdo Database connection
+ * @return void
+ */
+function cleanupCartSession(PDO $pdo): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        @session_start();
+    }
+
+    if (empty($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
+        return;
+    }
+
+    $productIds = array_keys($_SESSION['cart']);
+    if (empty($productIds)) {
+        return;
+    }
+
+    // Fetch only active products from the database for the IDs in the cart
+    $inClause = implode(',', array_fill(0, count($productIds), '?'));
+    try {
+        $stmt = $pdo->prepare("SELECT id FROM products WHERE id IN ($inClause) AND is_active = 1");
+        $stmt->execute($productIds);
+        $activeIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (Exception $e) {
+        // If query fails, do not modify cart session to avoid breaking user experience
+        return;
+    }
+
+    // Convert active IDs to integers for strict comparison
+    $activeIds = array_map('intval', $activeIds);
+
+    // Remove any items from the cart session that are not active/present in DB
+    $removedAny = false;
+    foreach ($productIds as $id) {
+        if (!in_array((int)$id, $activeIds, true)) {
+            unset($_SESSION['cart'][$id]);
+            $removedAny = true;
+
+            // Also clean up from checkout_items if present
+            if (isset($_SESSION['checkout_items']) && is_array($_SESSION['checkout_items'])) {
+                if (($key = array_search($id, $_SESSION['checkout_items'])) !== false) {
+                    unset($_SESSION['checkout_items'][$key]);
+                }
+            }
+        }
+    }
+
+    if ($removedAny && isset($_SESSION['checkout_items']) && is_array($_SESSION['checkout_items'])) {
+        $_SESSION['checkout_items'] = array_values($_SESSION['checkout_items']);
+    }
+}
+

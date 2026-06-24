@@ -24,6 +24,7 @@ $csrfToken = generateCSRFToken();
 
 // Fetch store settings
 $pdo = getDBConnection();
+cleanupCartSession($pdo);
 $stmtSettings = $pdo->query("SELECT * FROM store_settings LIMIT 1");
 $storeSettings = $stmtSettings->fetch();
 

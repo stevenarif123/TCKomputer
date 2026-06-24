@@ -86,6 +86,10 @@ if (!isset($_SESSION['cart'])) {
 // Add to cart or increment existing quantity
 $redirectUrl = $_SERVER['HTTP_REFERER'] ?? 'product-detail?id=' . $productId;
 
+if (isset($_POST['buy_now']) && $_POST['buy_now'] == 1) {
+    $_SESSION['checkout_items'] = [$productId];
+}
+
 if (isset($_SESSION['cart'][$productId])) {
     // Increment existing quantity
     $newQty = $_SESSION['cart'][$productId]['quantity'] + $quantity;

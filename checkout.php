@@ -14,6 +14,9 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/config/helpers.php';
 
+$pdo = getDBConnection();
+cleanupCartSession($pdo);
+
 // Redirect to cart if cart is empty
 if (empty($_SESSION['cart'])) {
     redirect('cart.php', 'Keranjang belanja kosong. Silakan tambahkan produk terlebih dahulu.', 'warning');
@@ -24,13 +27,14 @@ if (empty($_SESSION['customer_profile'])) {
     redirect('cart.php', 'Silakan masuk / atur profil Anda terlebih dahulu sebelum melakukan checkout.', 'warning');
 }
 
-// Redirect to cart if no items were selected for checkout
+// Filter selected items to only keep those that exist in the cart
 $checkoutItems = $_SESSION['checkout_items'] ?? [];
-if (empty($checkoutItems)) {
-    redirect('cart.php', 'Silakan pilih produk yang ingin di-checkout.', 'warning');
-}
+$checkoutItems = array_intersect($checkoutItems, array_keys($_SESSION['cart']));
 
-$pdo = getDBConnection();
+if (empty($checkoutItems)) {
+    $checkoutItems = array_keys($_SESSION['cart']);
+    $_SESSION['checkout_items'] = $checkoutItems;
+}
 
 // Fetch flash sale state
 $stmtFs = $pdo->query("SELECT flash_sale_active, flash_sale_end FROM store_settings LIMIT 1");
@@ -433,9 +437,14 @@ unset($_SESSION['checkout_errors']);
                     <span class="co-value" id="co-freeship-display" style="color: #ba1a1a;">- Rp 0</span>
                 </div>
                 
+                <div class="co-summary-row">
+                    <span class="co-label">Biaya Layanan</span>
+                    <span class="co-value">Rp 1.000</span>
+                </div>
+                
                 <div class="co-summary-row co-total">
                     <span class="co-label">Total Pesanan</span>
-                    <span class="co-value" id="co-total-display"><?= formatRupiah($subtotal - $baseDiscountAmount) ?></span>
+                    <span class="co-value" id="co-total-display"><?= formatRupiah($subtotal - $baseDiscountAmount + 1000) ?></span>
                 </div>
                 
                 <?php
@@ -496,7 +505,7 @@ unset($_SESSION['checkout_errors']);
 <div class="co-bottom-bar">
     <div class="co-total-section">
         <div class="co-total-label">Total Pesanan</div>
-        <div class="co-total-value" id="co-bottom-total"><?= formatRupiah($subtotal) ?></div>
+        <div class="co-total-value" id="co-bottom-total"><?= formatRupiah($subtotal - $baseDiscountAmount + 1000) ?></div>
     </div>
     <button type="button" class="co-submit-btn" id="co-submit-btn" onclick="submitCheckout(this)">
         <span id="co-btn-text">Buat Pesanan</span>
@@ -537,7 +546,7 @@ unset($_SESSION['checkout_errors']);
             document.getElementById('co-freeship-row').style.display = 'none';
         }
 
-        const total = coSubtotal - baseDiscountAmount + shippingCost - shippingDiscount;
+        const total = coSubtotal - baseDiscountAmount + shippingCost - shippingDiscount + 1000;
 
         document.getElementById('co-shipping-display').textContent = coFormatRp(shippingCost);
         document.getElementById('co-total-display').textContent = coFormatRp(total);
