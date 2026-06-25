@@ -303,8 +303,10 @@ try {
     // Commit transaction
     $pdo->commit();
 
-    // Clear cart from session
+    // Clear cart and checkout state from session
     unset($_SESSION['cart']);
+    unset($_SESSION['checkout_items']);
+    unset($_SESSION['checkout_errors']);
 
     // Save/Update Customer Profile in Session
     $_SESSION['customer_profile'] = [

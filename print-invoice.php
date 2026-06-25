@@ -653,9 +653,14 @@ if ($serviceFee < 0) {
                         $displayName = '[' . $item['brand'] . '] ' . $displayName;
                     }
                 ?>
-                    <tr>
+                    <tr<?= ((int)$item['product_price'] === 0) ? ' style="background-color: #f0fdf4;"' : '' ?>>
                         <td><?= $index++ ?></td>
-                        <td><strong><?= sanitizeOutput($displayName) ?></strong></td>
+                        <td>
+                            <strong><?= sanitizeOutput($displayName) ?></strong>
+                            <?php if ((int)$item['product_price'] === 0): ?>
+                                <span style="display:inline-block; background:#16a34a; color:#fff; font-size:8px; font-weight:900; padding:1px 5px; border-radius:3px; margin-left:4px; vertical-align:middle;">🎁 BONUS GRATIS</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-right"><?= formatRupiah((int)$item['product_price']) ?></td>
                         <td style="text-align: center;"><?= (int)$item['quantity'] ?></td>
                         <td class="text-right"><?= formatRupiah((int)$item['subtotal']) ?></td>
@@ -677,7 +682,7 @@ if ($serviceFee < 0) {
                 </tr>
                 <?php if (!empty($order['discount_amount']) && $order['discount_amount'] > 0): ?>
                     <tr>
-                        <td>Diskon / Promosi</td>
+                        <td>Diskon / Promosi<?php if (!empty($order['applied_promotions'])): ?><br><span style="font-size:8px; color:#6b7280;">(<?= sanitizeOutput($order['applied_promotions']) ?>)</span><?php endif; ?></td>
                         <td class="text-right" style="color: #10b981;">-<?= formatRupiah((int)$order['discount_amount']) ?></td>
                     </tr>
                 <?php endif; ?>

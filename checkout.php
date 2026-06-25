@@ -29,12 +29,17 @@ if (empty($_SESSION['customer_profile'])) {
 
 // Filter selected items to only keep those that exist in the cart
 $checkoutItems = $_SESSION['checkout_items'] ?? [];
-$checkoutItems = array_intersect($checkoutItems, array_keys($_SESSION['cart']));
+$checkoutItems = array_values(array_intersect($checkoutItems, array_keys($_SESSION['cart'])));
 
 if (empty($checkoutItems)) {
-    $checkoutItems = array_keys($_SESSION['cart']);
-    $_SESSION['checkout_items'] = $checkoutItems;
+    // Don't silently fall back to ALL cart items - redirect to cart
+    // so user explicitly selects what to checkout
+    unset($_SESSION['checkout_items']);
+    redirect('cart', 'Silakan pilih produk yang ingin di-checkout terlebih dahulu.', 'warning');
 }
+
+// Update session with the filtered list
+$_SESSION['checkout_items'] = $checkoutItems;
 
 // Fetch flash sale state
 $stmtFs = $pdo->query("SELECT flash_sale_active, flash_sale_end FROM store_settings LIMIT 1");
