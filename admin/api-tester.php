@@ -215,10 +215,10 @@ try {
                     'login_identifier' => $dummyPhone,
                     'password' => 'password123'
                 ]);
-                // Follow the redirect to check session
-                $profRes = $doRequest($baseUrl . '/profile.php');
-                $logPass = strpos(strtolower($profRes['html']), 'profil') !== false || strpos(strtolower($profRes['html']), 'keluar') !== false;
-                addResult($response, 'Login Flow', $logPass, $logPass ? "Logged in successfully" : "Failed to login");
+                
+                $loginData = json_decode($res['html'], true);
+                $logPass = ($loginData['success'] ?? false) === true;
+                addResult($response, 'Login Flow', $logPass, $logPass ? "Logged in successfully" : "Failed: " . ($loginData['message'] ?? 'Unknown error'));
                 if (!$logPass) throw new Exception("Login failed");
 
                 // 4. Add to Cart
