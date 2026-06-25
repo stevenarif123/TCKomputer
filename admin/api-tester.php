@@ -130,14 +130,12 @@ try {
                 if ($returnVar === 0) {
                     addResult($response, 'PHPUnit Business Logic Tests', true, 'All tests passed successfully');
                 } else {
-                    $lastLine = end($output) ?: 'Unknown failure';
-                    foreach (array_reverse($output) as $line) {
-                        if (strpos($line, 'Tests:') !== false || strpos($line, 'ERRORS!') !== false || strpos($line, 'FAILURES!') !== false) {
-                            $lastLine = $line;
-                            break;
-                        }
+                    // Extract full error instead of just the last line to help debugging
+                    $errorText = 'Unknown failure';
+                    if (!empty($output)) {
+                        $errorText = implode("<br>", array_slice($output, -5)); // get last 5 lines for context
                     }
-                    addResult($response, 'PHPUnit Business Logic Tests', false, "Tests failed: " . strip_tags($lastLine));
+                    addResult($response, 'PHPUnit Business Logic Tests', false, "Tests failed: " . $errorText);
                 }
             } else {
                 addResult($response, 'PHPUnit Binary Found', false, "phpunit.phar not found in $testDir");
@@ -183,8 +181,9 @@ try {
                 $dummyPhone = '0812' . rand(10000000, 99999999);
 
                 // 2. Register
-                $csrf = $getCsrf($baseUrl . '/register');
-                if (!$csrf) throw new Exception("Failed to get CSRF token from /register");
+                // Registration and Login forms are in the header modal, so we can get CSRF from index.php
+                $csrf = $getCsrf($baseUrl . '/index.php');
+                if (!$csrf) throw new Exception("Failed to get CSRF token from index.php");
                 
                 $res = $doRequest($baseUrl . '/actions/profile-register.php', [
                     'csrf_token' => $csrf,
@@ -202,14 +201,14 @@ try {
                 if (!$regPass) throw new Exception("Registration failed");
 
                 // 3. Login
-                $csrf = $getCsrf($baseUrl . '/login');
+                $csrf = $getCsrf($baseUrl . '/index.php');
                 $res = $doRequest($baseUrl . '/actions/profile-login.php', [
                     'csrf_token' => $csrf,
                     'email' => $dummyEmail,
                     'password' => 'password123'
                 ]);
                 // Follow the redirect to check session
-                $profRes = $doRequest($baseUrl . '/profile');
+                $profRes = $doRequest($baseUrl . '/profile.php');
                 $logPass = strpos(strtolower($profRes['html']), 'profil') !== false || strpos(strtolower($profRes['html']), 'keluar') !== false;
                 addResult($response, 'Login Flow', $logPass, $logPass ? "Logged in successfully" : "Failed to login");
                 if (!$logPass) throw new Exception("Login failed");
@@ -218,25 +217,25 @@ try {
                 $productId = $pdo->query("SELECT id FROM products WHERE stock > 0 AND status='published' LIMIT 1")->fetchColumn();
                 if (!$productId) throw new Exception("No available products to test cart");
 
-                $csrf = $getCsrf($baseUrl . '/product-detail?id=' . $productId);
+                $csrf = $getCsrf($baseUrl . '/product-detail.php?id=' . $productId);
                 $res = $doRequest($baseUrl . '/actions/cart-add.php', [
                     'csrf_token' => $csrf,
                     'product_id' => $productId,
                     'quantity' => 1
                 ]);
-                $cartRes = $doRequest($baseUrl . '/cart');
+                $cartRes = $doRequest($baseUrl . '/cart.php');
                 $cartPass = strpos($cartRes['html'], 'checkout') !== false;
                 addResult($response, 'Add to Cart Flow', $cartPass, $cartPass ? "Product $productId added to cart" : "Cart is empty");
                 if (!$cartPass) throw new Exception("Cart flow failed");
 
                 // 5. Checkout Prep
-                $csrf = $getCsrf($baseUrl . '/cart');
+                $csrf = $getCsrf($baseUrl . '/cart.php');
                 // Build query string manually for array parameter
                 $postPrep = "csrf_token=" . urlencode($csrf) . "&selected_items%5B%5D=" . urlencode($productId);
                 $doRequest($baseUrl . '/actions/cart-checkout-prep.php', $postPrep);
 
                 // 6. Checkout Process
-                $csrf = $getCsrf($baseUrl . '/checkout');
+                $csrf = $getCsrf($baseUrl . '/checkout.php');
                 $doRequest($baseUrl . '/actions/checkout-process.php', [
                     'csrf_token' => $csrf,
                     'buyer_name' => 'Tester Robot',
