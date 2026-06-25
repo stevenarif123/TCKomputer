@@ -116,6 +116,20 @@ $current_page = 'system-tester.php';
                 </div>
             </div>
 
+            <!-- Test Module: Realtime User Flow -->
+            <div class="tester-card" id="module-realtime-e2e">
+                <div class="tester-card-header" onclick="toggleCard('realtime-e2e')">
+                    <div class="tester-card-title">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                        5. Realtime User Flow (Simulasi Pembeli)
+                    </div>
+                    <span class="status-badge status-pending" id="badge-realtime-e2e">Pending</span>
+                </div>
+                <div class="tester-card-body" id="body-realtime-e2e">
+                    <div style="padding: 15px; text-align:center; color: #94a3b8; font-size: 13px;">Menunggu untuk dijalankan...</div>
+                </div>
+            </div>
+
             <div id="summary-box" class="summary-box">
                 <div class="summary-title" id="summary-title">Semua Pengujian Lulus! 🎉</div>
                 <p id="summary-desc" style="color: #4b5563;">Sistem TCKomputer 100% siap untuk melayani pembeli.</p>
@@ -190,7 +204,7 @@ $current_page = 'system-tester.php';
             summaryBox.style.display = 'none';
 
             // Reset all
-            ['env', 'db', 'e2e', 'unit'].forEach(id => {
+            ['env', 'db', 'e2e', 'unit', 'realtime-e2e'].forEach(id => {
                 document.getElementById('badge-' + id).className = 'status-badge status-pending';
                 document.getElementById('badge-' + id).innerText = 'Pending';
             });
@@ -200,6 +214,11 @@ $current_page = 'system-tester.php';
             const r2 = await runTest('db');
             const r3 = await runTest('e2e');
             const r4 = await runTest('unit');
+            const r5 = await runTest('realtime-e2e'); // Note: endpoint uses action=realtime-e2e, UI uses module-realtime
+            
+            // To handle UI id mismatch, we should map 'realtime' to 'realtime-e2e' in API call or fix UI.
+            // Wait, UI uses module-realtime but calls api-tester.php?action=realtime so we must map it.
+
 
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">play_circle</span> Ulangi Pengujian';
