@@ -212,6 +212,22 @@ function getPaymentMethodLabel(string $method): string
                         <td colspan="3" class="text-right"><strong>Ongkos Kirim</strong></td>
                         <td><strong><?= formatRupiah((int)$order['shipping_cost']) ?></strong></td>
                     </tr>
+                    <?php if (!empty($order['discount_amount']) && $order['discount_amount'] > 0): ?>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Diskon / Promosi</strong></td>
+                        <td><strong style="color: #10b981;">-<?= formatRupiah((int)$order['discount_amount']) ?></strong></td>
+                    </tr>
+                    <?php endif; ?>
+                    <?php 
+                    $discountAmount = (int)($order['discount_amount'] ?? 0);
+                    $serviceFee = (int)$order['total'] - ((int)$order['subtotal'] + (int)$order['shipping_cost'] - $discountAmount);
+                    if ($serviceFee > 0): 
+                    ?>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Biaya Layanan</strong></td>
+                        <td><strong><?= formatRupiah($serviceFee) ?></strong></td>
+                    </tr>
+                    <?php endif; ?>
                     <tr>
                         <td colspan="3" class="text-right"><strong>Total</strong></td>
                         <td><strong><?= formatRupiah((int)$order['total']) ?></strong></td>

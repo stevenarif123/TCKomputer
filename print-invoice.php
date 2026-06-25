@@ -93,7 +93,8 @@ if ($isPaid) {
 $subtotal = (int)$order['subtotal'];
 $shippingCost = (int)$order['shipping_cost'];
 $total = (int)$order['total'];
-$serviceFee = $total - ($subtotal + $shippingCost);
+$discountAmount = (int)($order['discount_amount'] ?? 0);
+$serviceFee = $total - ($subtotal + $shippingCost - $discountAmount);
 if ($serviceFee < 0) {
     $serviceFee = 0;
 }
@@ -674,6 +675,12 @@ if ($serviceFee < 0) {
                     <td>Subtotal Pengiriman</td>
                     <td class="text-right"><?= formatRupiah($shippingCost) ?></td>
                 </tr>
+                <?php if (!empty($order['discount_amount']) && $order['discount_amount'] > 0): ?>
+                    <tr>
+                        <td>Diskon / Promosi</td>
+                        <td class="text-right" style="color: #10b981;">-<?= formatRupiah((int)$order['discount_amount']) ?></td>
+                    </tr>
+                <?php endif; ?>
                 <?php if ($serviceFee > 0): ?>
                     <tr>
                         <td>Biaya Layanan</td>
