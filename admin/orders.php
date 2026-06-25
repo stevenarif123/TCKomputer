@@ -93,6 +93,11 @@ function getAdminPaymentStatusLabel(string $status): string
                             <td>
                                 <a href="order-detail?id=<?= (int)$order['id'] ?>" class="btn btn-sm btn-info">Detail</a>
                                 <a href="../print-invoice?id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-sm btn-secondary" style="background-color: #4b5563; color: white;">Cetak</a>
+                                <form action="order-delete" method="POST" style="display:inline-block; margin-left: 4px;" onsubmit="return confirm('PERINGATAN DEMO: Anda yakin ingin menghapus pesanan ini secara permanen dari database? Aksi ini tidak dapat dibatalkan.');">
+                                    <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($_SESSION['csrf_token'] ?? '') ?>">
+                                    <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
+                                    <button type="submit" class="btn btn-sm" style="background-color: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Hapus</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>

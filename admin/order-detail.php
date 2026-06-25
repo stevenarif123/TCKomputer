@@ -99,10 +99,17 @@ function getPaymentMethodLabel(string $method): string
 <div class="admin-order-detail">
     <div class="detail-header">
         <h2>Pesanan: <?= sanitizeOutput($order['order_code']) ?></h2>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             <a href="../print-invoice?id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-primary">
                 <span class="material-symbols-outlined">print</span> Cetak Invoice
             </a>
+            <form action="order-delete" method="POST" style="margin:0;" onsubmit="return confirm('PERINGATAN DEMO: Anda yakin ingin menghapus pesanan ini secara permanen dari database? Aksi ini tidak dapat dibatalkan.');">
+                <input type="hidden" name="csrf_token" value="<?= sanitizeOutput($_SESSION['csrf_token'] ?? '') ?>">
+                <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
+                <button type="submit" class="btn" style="background-color: #ef4444; color: white; border: none; display: flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined">delete</span> Hapus Pesanan
+                </button>
+            </form>
             <a href="orders" class="btn btn-secondary">&laquo; Kembali</a>
         </div>
     </div>
