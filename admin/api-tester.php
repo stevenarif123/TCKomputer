@@ -212,7 +212,7 @@ try {
                 $csrf = $getCsrf($baseUrl . '/index.php');
                 $res = $doRequest($baseUrl . '/actions/profile-login.php', [
                     'csrf_token' => $csrf,
-                    'email' => $dummyEmail,
+                    'login_identifier' => $dummyPhone,
                     'password' => 'password123'
                 ]);
                 // Follow the redirect to check session
