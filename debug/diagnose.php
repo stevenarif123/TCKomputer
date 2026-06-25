@@ -3,7 +3,7 @@
  * DIAGNOSTIC: Query the latest order and its items from the database
  * Also check for any active promotions and database triggers
  */
-require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/../config/db.php';
 $pdo = getDBConnection();
 
 header('Content-Type: text/plain; charset=utf-8');
