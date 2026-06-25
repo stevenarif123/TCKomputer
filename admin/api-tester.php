@@ -63,7 +63,7 @@ try {
             addResult($response, 'Orphaned Order Items', $orphans === 0, $orphans === 0 ? 'Clean' : "Found $orphans ghost items");
 
             // Check minimal config
-            $adminCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn();
+            $adminCount = $pdo->query("SELECT COUNT(*) FROM admins")->fetchColumn();
             addResult($response, 'Admin Account Exists', $adminCount > 0, "Admins found: $adminCount");
 
             $shippingCount = $pdo->query("SELECT COUNT(*) FROM shipping_areas")->fetchColumn();
@@ -115,6 +115,10 @@ try {
             $response['success'] = true;
             $testDir = __DIR__ . '/../testing';
             $phpunit = $testDir . '/phpunit.phar';
+            
+            if (!file_exists($phpunit)) {
+                $phpunit = __DIR__ . '/../vendor/bin/phpunit';
+            }
             
             if (file_exists($phpunit)) {
                 $output = [];
