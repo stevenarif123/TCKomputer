@@ -41,6 +41,13 @@ if (empty($checkoutItems)) {
 // Update session with the filtered list
 $_SESSION['checkout_items'] = $checkoutItems;
 
+// === DIAGNOSTIC: Log checkout page load state ===
+$debugLog = date('Y-m-d H:i:s') . " === CHECKOUT PAGE LOAD ===\n";
+$debugLog .= "checkoutItems (filtered): " . json_encode($checkoutItems) . "\n";
+$debugLog .= "SESSION cart keys: " . json_encode(array_keys($_SESSION['cart'] ?? [])) . "\n";
+$debugLog .= "=== END CHECKOUT PAGE LOAD ===\n\n";
+@file_put_contents(__DIR__ . '/debug/checkout_debug.log', $debugLog, FILE_APPEND);
+
 // Fetch flash sale state
 $stmtFs = $pdo->query("SELECT flash_sale_active, flash_sale_end FROM store_settings LIMIT 1");
 $fsSettings = $stmtFs->fetch();

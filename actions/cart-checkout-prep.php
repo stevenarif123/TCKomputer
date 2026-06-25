@@ -77,6 +77,15 @@ if (empty($validIds)) {
     redirect('../cart', 'Produk yang dipilih tidak valid, habis, atau tidak tersedia', 'error');
 }
 
+// === DIAGNOSTIC: Log what items are being set for checkout ===
+$debugLog = date('Y-m-d H:i:s') . " === CART-CHECKOUT-PREP DEBUG ===\n";
+$debugLog .= "POST selected_items: " . json_encode($_POST['selected_items'] ?? 'NOT SET') . "\n";
+$debugLog .= "validIds after filtering: " . json_encode($validIds) . "\n";
+$debugLog .= "SESSION cart keys: " . json_encode(array_keys($_SESSION['cart'] ?? [])) . "\n";
+$debugLog .= "SESSION checkout_items BEFORE: " . json_encode($_SESSION['checkout_items'] ?? 'NOT SET') . "\n";
+$debugLog .= "=== END CART-CHECKOUT-PREP DEBUG ===\n\n";
+@file_put_contents(__DIR__ . '/../debug/checkout_debug.log', $debugLog, FILE_APPEND);
+
 // Store the valid selected items into session
 $_SESSION['checkout_items'] = $validIds;
 

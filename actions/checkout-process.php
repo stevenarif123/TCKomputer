@@ -120,6 +120,13 @@ $isGlobalFlashSaleActive = !empty($fsSettings['flash_sale_active']) && $fsSecond
 $subtotal = 0;
 $validatedItems = [];
 
+// === DIAGNOSTIC: Capture session state at order creation time ===
+$debugLog = date('Y-m-d H:i:s') . " === CHECKOUT DEBUG ===\n";
+$debugLog .= "SESSION checkout_items: " . json_encode($_SESSION['checkout_items'] ?? 'NOT SET') . "\n";
+$debugLog .= "SESSION cart keys: " . json_encode(array_keys($_SESSION['cart'] ?? [])) . "\n";
+$debugLog .= "SESSION cart full: " . json_encode($_SESSION['cart'] ?? []) . "\n";
+$debugLog .= "checkoutItems var: " . json_encode($checkoutItems) . "\n";
+
 foreach ($checkoutItems as $productId) {
     if (!isset($_SESSION['cart'][$productId])) continue;
     $item = $_SESSION['cart'][$productId];
@@ -195,6 +202,20 @@ $finalShippingCost = $promoResults['new_shipping_cost'];
 
 $serviceFee = 1000; // Biaya Layanan
 $total = $subtotal - $discountAmount + $finalShippingCost + $serviceFee;
+
+// === DIAGNOSTIC: Log validated items and promo results ===
+$debugLog .= "validatedItems count: " . count($validatedItems) . "\n";
+foreach ($validatedItems as $vi) {
+    $debugLog .= "  - [{$vi['product_id']}] {$vi['product_name']} @ {$vi['product_price']} x {$vi['quantity']} = {$vi['subtotal']}\n";
+}
+$debugLog .= "subtotal: {$subtotal}\n";
+$debugLog .= "discountAmount: {$discountAmount}\n";
+$debugLog .= "appliedPromotions: " . json_encode($appliedPromotions) . "\n";
+$debugLog .= "freeItemId: " . json_encode($freeItemId) . "\n";
+$debugLog .= "finalShippingCost: {$finalShippingCost}\n";
+$debugLog .= "total: {$total}\n";
+$debugLog .= "=== END CHECKOUT DEBUG ===\n\n";
+@file_put_contents(__DIR__ . '/../debug/checkout_debug.log', $debugLog, FILE_APPEND);
 
 // ============================================
 // Create Order in Transaction
