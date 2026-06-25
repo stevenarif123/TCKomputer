@@ -92,6 +92,7 @@ $csrfToken = generateCSRFToken();
                     <li><a href="faqs" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['faqs.php', 'faq-add.php', 'faq-edit.php', 'faq-categories.php', 'faq-category-add.php', 'faq-category-edit.php']) ? 'active' : '' ?>"><span class="material-symbols-outlined">quiz</span> FAQ</a></li>
                     <li><a href="analytics" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'analytics.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">bar_chart</span> Analitik</a></li>
                     <li><a href="settings" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">settings</span> Pengaturan</a></li>
+                    <li><a href="system-tester" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'system-tester.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">fact_check</span> System Tester</a></li>
                     <li><a href="logout" class="nav-link nav-logout"><span class="material-symbols-outlined">logout</span> Keluar</a></li>
                 </ul>
             </nav>
