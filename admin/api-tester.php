@@ -145,7 +145,13 @@ try {
         case 'realtime-e2e':
             $response['success'] = true;
             $pdo = getDBConnection();
-            $baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . str_replace('/admin/api-tester.php', '', $_SERVER['PHP_SELF']);
+            
+            $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+                       (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) ||
+                       (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            $protocol = $isHttps ? 'https://' : 'http://';
+            $baseUrl = $protocol . $_SERVER['HTTP_HOST'] . str_replace('/admin/api-tester.php', '', $_SERVER['PHP_SELF']);
+            
             $cookieFile = tempnam(sys_get_temp_dir(), 'e2e_cookie');
 
             $doRequest = function($url, $postData = null) use ($cookieFile) {
@@ -154,6 +160,8 @@ try {
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 curl_setopt($ch, CURLOPT_COOKIEJAR, $cookieFile);
                 curl_setopt($ch, CURLOPT_COOKIEFILE, $cookieFile);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 if ($postData !== null) {
                     curl_setopt($ch, CURLOPT_POST, true);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, is_array($postData) ? http_build_query($postData) : $postData);
