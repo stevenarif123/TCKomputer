@@ -222,7 +222,7 @@ try {
                 if (!$logPass) throw new Exception("Login failed");
 
                 // 4. Add to Cart
-                $productId = $pdo->query("SELECT id FROM products WHERE stock > 0 AND status='published' LIMIT 1")->fetchColumn();
+                $productId = $pdo->query("SELECT id FROM products WHERE stock > 0 AND is_active = 1 LIMIT 1")->fetchColumn();
                 if (!$productId) throw new Exception("No available products to test cart");
 
                 $csrf = $getCsrf($baseUrl . '/product-detail.php?id=' . $productId);
