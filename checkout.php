@@ -92,6 +92,14 @@ $promoResults = $discountEngine->applyDiscounts($cartItems, 0);
 $baseDiscountAmount = $promoResults['discount_amount'];
 $appliedPromos = $promoResults['applied_promotions'];
 
+$freeItemId = $promoResults['free_item_id'] ?? null;
+$freeItem = null;
+if ($freeItemId) {
+    $stmtFree = $pdo->prepare("SELECT name, image FROM products WHERE id = ?");
+    $stmtFree->execute([$freeItemId]);
+    $freeItem = $stmtFree->fetch();
+}
+
 $freeShippingMax = 0;
 $fsPromoName = '';
 $stmtFsPromo = $pdo->query("SELECT name, discount_value, min_spend FROM promotions WHERE is_active=1 AND promo_type='free_shipping' AND start_date <= NOW() AND end_date >= NOW() LIMIT 1");
@@ -384,6 +392,20 @@ unset($_SESSION['checkout_errors']);
                     </div>
                 </div>
                 <?php endforeach; ?>
+
+                <?php if ($freeItem): ?>
+                <div class="co-product" style="background-color: #f0fdf4; border-color: #dcfce7; border-radius: 8px; padding: 12px; margin-top: 8px; border: 1px solid #dcfce7;">
+                    <div class="co-product-img" style="border-color: #bbf7d0;">
+                        <img alt="Bonus Gratis" src="<?= !empty($freeItem['image']) ? 'uploads/products/' . $freeItem['image'] : 'uploads/products/placeholder.png' ?>">
+                    </div>
+                    <div class="co-product-info">
+                        <div style="font-size: 10px; font-weight: 900; color: #16a34a; text-transform: uppercase; margin-bottom: 2px;">🎁 Bonus Gratis!</div>
+                        <div class="co-product-name" style="color: #14532d;"><?= sanitizeOutput($freeItem['name']) ?></div>
+                        <div class="co-product-meta">x1</div>
+                        <div class="co-product-price" style="color: #16a34a;">Rp 0</div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Opsi Pengiriman -->
                 <div class="co-section-divider">
