@@ -103,7 +103,7 @@ try {
         
         <p style="font-size: 14px; color: #4b5563;">Setelah perbaikan ini, Anda boleh menghapus data dari mana saja (Admin Web, maupun phpMyAdmin), dan barang hantu tidak akan pernah muncul lagi.</p>
         
-        <a href="orders" class="btn">Kembali ke Kelola Pesanan</a>
+        <a href="../admin/orders" class="btn">Kembali ke Kelola Pesanan</a>
     </div>
 </body>
 </html>

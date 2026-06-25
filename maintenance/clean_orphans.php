@@ -62,7 +62,7 @@ try {
         
         <p>Barang hantu terjadi karena sisa data pesanan lama yang gagal terhapus di database.</p>
         
-        <a href="orders" class="btn">Kembali ke Kelola Pesanan</a>
+        <a href="../admin/orders" class="btn">Kembali ke Kelola Pesanan</a>
     </div>
 </body>
 </html>
