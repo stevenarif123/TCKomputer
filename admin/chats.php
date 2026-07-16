@@ -11,18 +11,18 @@ require_once __DIR__ . '/../includes/admin-header.php';
     <h2>Live Chat Pelanggan</h2>
 </div>
 
-<div class="grid-2col-asym-rev chat-layout-grid">
+<div class="chat-layout-grid">
     <!-- Left Column: Sesi Chat -->
     <div class="admin-card chat-sidebar-card">
+        <div class="chat-filter-tabs">
+            <button class="filter-tab active" data-status="active">Aktif</button>
+            <button class="filter-tab" data-status="unread">Belum Dibaca</button>
+            <button class="filter-tab" data-status="closed">Ditutup</button>
+        </div>
         <div class="chat-sessions-header">
             <div class="search-wrapper">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" id="session-search" placeholder="Cari nama / HP..." class="form-input">
-            </div>
-            <div class="chat-filter-tabs">
-                <button class="filter-tab active" data-status="active">Aktif</button>
-                <button class="filter-tab" data-status="closed">Ditutup</button>
-                <button class="filter-tab" data-status="">Semua</button>
+                <input type="text" id="session-search" placeholder="Filter percakapan..." class="form-input">
             </div>
         </div>
         <div id="sessions-container" class="sessions-scrollable">
@@ -79,10 +79,24 @@ require_once __DIR__ . '/../includes/admin-header.php';
 
             <!-- Input Balasan -->
             <div class="conversation-input-area">
-                <textarea id="chat-reply-input" class="form-textarea" placeholder="Tulis balasan... (Ctrl+Enter untuk kirim)" rows="1" style="min-height: 44px; padding-top: 11px;"></textarea>
-                <button id="chat-reply-send" class="btn btn-primary" style="height: 44px; width: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--admin-radius-sm);">
-                    <span class="material-symbols-outlined">send</span>
-                </button>
+                <div class="input-tools">
+                    <button class="input-tool-btn" title="Format Tebal">
+                        <span class="material-symbols-outlined">format_bold</span>
+                    </button>
+                    <button class="input-tool-btn" title="Lampirkan File">
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+                    <button class="input-tool-btn" id="btn-quick-replies-toggle" title="Balasan Cepat">
+                        <span class="material-symbols-outlined">quick_reference_all</span>
+                    </button>
+                </div>
+                <div class="input-box-wrapper">
+                    <textarea id="chat-reply-input" class="form-textarea" placeholder="Tulis balasan... (Ctrl+Enter untuk kirim)" rows="2"></textarea>
+                    <button id="chat-reply-send" class="btn btn-primary send-btn">
+                        <span>Kirim</span>
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -111,6 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseSession = document.getElementById('btn-close-session');
     const sessionSearch = document.getElementById('session-search');
     const filterTabs = document.querySelectorAll('.filter-tab');
+    const btnQuickRepliesToggle = document.getElementById('btn-quick-replies-toggle');
+    const quickRepliesContainer = document.querySelector('.quick-replies-container');
 
     // Request Notification permission
     if (Notification.permission === 'default') {
@@ -136,6 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchSessions();
         });
     });
+
+    // Toggle quick replies
+    if (btnQuickRepliesToggle && quickRepliesContainer) {
+        btnQuickRepliesToggle.addEventListener('click', () => {
+            quickRepliesContainer.classList.toggle('hidden');
+        });
+    }
 
     // Fetch sessions list
     async function fetchSessions() {
@@ -182,9 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessions.forEach(session => {
             const isActive = session.id == activeSessionId ? 'active' : '';
             const isUnread = session.unread_admin > 0 ? 'unread' : '';
-            const initial = session.user_name.charAt(0).toUpperCase();
             
-            // Check if there are newly received messages from other sessions to play sound
             const prevItem = document.getElementById(`session-${session.id}`);
             if (prevItem) {
                 const prevUnread = parseInt(prevItem.getAttribute('data-unread') || '0');
@@ -197,9 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             totalUnread += parseInt(session.unread_admin);
 
+            // Status dot indicator
+            const isOnline = session.status === 'active' ? 'online' : 'offline';
+
             html += `
                 <div class="chat-session-item ${isActive} ${isUnread}" id="session-${session.id}" data-unread="${session.unread_admin}" onclick="selectSession(${session.id}, '${escapeHtml(session.user_name)}', '${session.user_id ? 'Terdaftar' : 'Anonim'}', '${session.user_phone || '-'}', '${session.user_email || '-'}', '${session.status}')">
-                    <div class="session-avatar">${initial}</div>
+                    ${isActive ? '<div class="active-indicator"></div>' : ''}
+                    <div class="session-avatar-wrap">
+                        <div class="session-avatar">${escapeHtml(session.user_name.charAt(0).toUpperCase())}</div>
+                        <span class="status-dot ${isOnline}"></span>
+                    </div>
                     <div class="session-info">
                         <div class="session-name-row">
                             <span class="session-name">${escapeHtml(session.user_name)}</span>
@@ -273,11 +301,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (status === 'closed') {
             btnCloseSession.style.display = 'none';
             document.querySelector('.conversation-input-area').classList.add('hidden');
-            document.querySelector('.quick-replies-container').classList.add('hidden');
+            if (quickRepliesContainer) quickRepliesContainer.classList.add('hidden');
         } else {
             btnCloseSession.style.display = 'inline-flex';
             document.querySelector('.conversation-input-area').classList.remove('hidden');
-            document.querySelector('.quick-replies-container').classList.remove('hidden');
+            if (quickRepliesContainer) quickRepliesContainer.classList.remove('hidden');
         }
 
         // Display panel
@@ -288,11 +316,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear active session highlight and set clicked one
         document.querySelectorAll('.chat-session-item').forEach(item => {
             item.classList.remove('active');
+            const ind = item.querySelector('.active-indicator');
+            if (ind) ind.remove();
         });
         const clickedItem = document.getElementById(`session-${id}`);
         if (clickedItem) {
             clickedItem.classList.add('active');
             clickedItem.classList.remove('unread');
+            
+            // Add active indicator if not present
+            if (!clickedItem.querySelector('.active-indicator')) {
+                const indicator = document.createElement('div');
+                indicator.className = 'active-indicator';
+                clickedItem.insertBefore(indicator, clickedItem.firstChild);
+            }
+            
             const itemBadge = clickedItem.querySelector('.session-badge');
             if (itemBadge) itemBadge.remove();
         }
@@ -345,20 +383,33 @@ document.addEventListener('DOMContentLoaded', () => {
             msgDiv.innerHTML = `<span>${escapeHtml(msg.message)}</span>`;
         } else {
             const senderClass = isAdmin ? 'message-admin' : (isAI ? 'message-ai' : 'message-user');
-            let senderNameHtml = '';
             
-            if (isAI) {
-                senderNameHtml = '<span class="ai-badge">AI Assistant</span>';
-            } else if (!isAdmin) {
-                senderNameHtml = `<span class="user-name-tag">${escapeHtml(msg.sender_name)}</span>`;
+            let avatarHtml = '';
+            let senderName = '';
+            
+            if (isAdmin) {
+                avatarHtml = `<div class="message-avatar admin-avatar-icon"><span class="material-symbols-outlined">support_agent</span></div>`;
+                senderName = 'Anda';
+            } else if (isAI) {
+                avatarHtml = `<div class="message-avatar ai-avatar-icon"><span class="material-symbols-outlined">smart_toy</span></div>`;
+                senderName = 'Asisten AI';
+            } else {
+                const initial = msg.sender_name ? msg.sender_name.charAt(0).toUpperCase() : 'U';
+                avatarHtml = `<div class="message-avatar user-avatar-initials">${escapeHtml(initial)}</div>`;
+                senderName = msg.sender_name;
             }
 
             msgDiv.className = `chat-message ${senderClass}`;
             msgDiv.innerHTML = `
-                <div class="message-bubble">
-                    ${senderNameHtml ? `<div class="message-sender">${senderNameHtml}</div>` : ''}
-                    <div class="message-text">${msg.message.replace(/\n/g, '<br>')}</div>
-                    <div class="message-time">${msg.time}</div>
+                ${avatarHtml}
+                <div class="message-body">
+                    <div class="message-meta">
+                        <span class="message-sender-name">${escapeHtml(senderName)}</span>
+                        <span class="message-time">${msg.time}</span>
+                    </div>
+                    <div class="message-bubble">
+                        <div class="message-text">${msg.message.replace(/\n/g, '<br>')}</div>
+                    </div>
                 </div>
             `;
         }
@@ -442,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update local status representation
                 btnCloseSession.style.display = 'none';
                 document.querySelector('.conversation-input-area').classList.add('hidden');
-                document.querySelector('.quick-replies-container').classList.add('hidden');
+                if (quickRepliesContainer) quickRepliesContainer.classList.add('hidden');
                 
                 // Refresh messages & sessions
                 pollMessages();
