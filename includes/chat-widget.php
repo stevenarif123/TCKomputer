@@ -303,35 +303,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function pollMessages() {
         try {
-            const res = await fetch(`actions/chat-poll.php?session_token=${sessionToken}&after_id=${lastMessageId}`);
+            const res = await fetch(`actions/chat-poll.php?session_token=${sessionToken}&after_id=${lastMessageId}&is_open=${isOpen ? 1 : 0}`);
             const data = await res.json();
 
-            if (data.success && data.messages && data.messages.length > 0) {
-                let hasNewNonSelfMessages = false;
-
-                data.messages.forEach(msg => {
-                    // Check if message is already rendered (e.g. from user instant send)
-                    if (!document.getElementById(`msg-${msg.id}`)) {
-                        appendMessage(msg);
-                        if (msg.sender_type !== 'user') {
-                            hasNewNonSelfMessages = true;
+            if (data.success) {
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        // Check if message is already rendered (e.g. from user instant send)
+                        if (!document.getElementById(`msg-${msg.id}`)) {
+                            appendMessage(msg);
                         }
-                    }
-                    if (msg.id > lastMessageId) {
-                        lastMessageId = msg.id;
-                    }
-                });
+                        if (msg.id > lastMessageId) {
+                            lastMessageId = msg.id;
+                        }
+                    });
+                }
 
-                if (hasNewNonSelfMessages && !isOpen) {
-                    // Increment badge if panel is closed
-                    unreadCount += data.messages.filter(m => m.sender_type !== 'user').length;
-                    chatBadge.textContent = unreadCount;
+                // Update badge based on server unread count
+                if (data.unread_count > 0 && !isOpen) {
+                    chatBadge.textContent = data.unread_count;
                     chatBadge.classList.remove('hidden');
+                } else {
+                    chatBadge.classList.add('hidden');
+                }
+
+                // Update double checkmarks
+                if (data.last_read_id) {
+                    updateMessageReadStatus(data.last_read_id);
                 }
             }
         } catch (err) {
             console.error('Error polling chat messages:', err);
         }
+    }
+
+    // Update message read status checkmarks
+    function updateMessageReadStatus(lastReadId) {
+        document.querySelectorAll('[id^="msg-"]').forEach(msgDiv => {
+            const msgId = parseInt(msgDiv.id.replace('msg-', ''));
+            if (!isNaN(msgId) && msgId <= lastReadId) {
+                const statusIcon = msgDiv.querySelector('.msg-status');
+                if (statusIcon && statusIcon.textContent !== 'done_all') {
+                    statusIcon.textContent = 'done_all';
+                    statusIcon.style.color = '#3b82f6'; // Blue for read
+                }
+            }
+        });
     }
 
     // Message append helper
@@ -357,6 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
             senderText = `<span class="text-[9px] font-bold text-slate-500 mr-1">${msg.sender_name}</span> `;
         }
 
+        let checkmarkIcon = 'done';
+        let checkmarkStyle = '';
+        if (isSelf && msg.is_read == 1) {
+            checkmarkIcon = 'done_all';
+            checkmarkStyle = 'style="color: #3b82f6;"';
+        }
+
         msgDiv.innerHTML = `
             ${senderText ? `<div class="text-[10px] text-slate-500 mb-0.5 flex items-center">${senderText}</div>` : ''}
             <div class="${bubbleClass} shadow-sm break-words text-xs leading-relaxed">
@@ -364,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
                 <span>${msg.time}</span>
-                ${isSelf ? `<span class="material-symbols-outlined text-[10px] msg-status">done</span>` : ''}
+                ${isSelf ? `<span class="material-symbols-outlined text-[10px] msg-status" ${checkmarkStyle}>${checkmarkIcon}</span>` : ''}
             </div>
         `;
 

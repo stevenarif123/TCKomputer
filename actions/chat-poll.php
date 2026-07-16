@@ -39,8 +39,10 @@ try {
         exit;
     }
     
+    $isOpen = (int)($_GET['is_open'] ?? 0);
+    
     // Fetch new messages
-    $stmtMsgs = $pdo->prepare("SELECT id, sender_type, sender_name, message, created_at 
+    $stmtMsgs = $pdo->prepare("SELECT id, sender_type, sender_name, message, is_read, created_at 
                                 FROM chat_messages 
                                 WHERE session_id = ? AND id > ? 
                                 ORDER BY id ASC");
@@ -52,20 +54,33 @@ try {
         $msg['time'] = date('H:i', strtotime($msg['created_at']));
     }
     
-    // Update unread status for messages sent by admin or AI or system
-    $stmtUpdateMsgs = $pdo->prepare("UPDATE chat_messages 
-                                     SET is_read = 1 
-                                     WHERE session_id = ? AND sender_type IN ('admin', 'ai', 'system') AND is_read = 0");
-    $stmtUpdateMsgs->execute([$sessionId]);
+    if ($isOpen === 1) {
+        // Update unread status for messages sent by admin or AI or system
+        $stmtUpdateMsgs = $pdo->prepare("UPDATE chat_messages 
+                                         SET is_read = 1 
+                                         WHERE session_id = ? AND sender_type IN ('admin', 'ai', 'system') AND is_read = 0");
+        $stmtUpdateMsgs->execute([$sessionId]);
+        
+        // Reset user unread counter
+        $stmtUpdateSession = $pdo->prepare("UPDATE chat_sessions SET unread_user = 0 WHERE id = ?");
+        $stmtUpdateSession->execute([$sessionId]);
+    }
     
-    // Reset user unread counter
-    $stmtUpdateSession = $pdo->prepare("UPDATE chat_sessions SET unread_user = 0 WHERE id = ?");
-    $stmtUpdateSession->execute([$sessionId]);
+    // Get unread user counter
+    $stmtSession = $pdo->prepare("SELECT unread_user FROM chat_sessions WHERE id = ?");
+    $stmtSession->execute([$sessionId]);
+    $unreadCount = ($isOpen === 1) ? 0 : (int)$stmtSession->fetchColumn();
+    
+    // Get last read message ID of the user (for double checkmarks)
+    $stmtLastRead = $pdo->prepare("SELECT MAX(id) FROM chat_messages WHERE session_id = ? AND sender_type = 'user' AND is_read = 1");
+    $stmtLastRead->execute([$sessionId]);
+    $lastReadId = (int)$stmtLastRead->fetchColumn();
     
     echo json_encode([
         'success' => true,
         'messages' => $messages,
-        'unread_count' => 0
+        'unread_count' => $unreadCount,
+        'last_read_id' => $lastReadId
     ]);
     exit;
     
