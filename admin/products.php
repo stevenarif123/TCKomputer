@@ -41,6 +41,9 @@ $totalProducts = $result['total'];
         <a href="export-products" class="btn btn-outline">
             <span class="material-symbols-outlined">download</span> Ekspor ke CSV
         </a>
+        <a href="product-import" class="btn btn-outline">
+            <span class="material-symbols-outlined">upload_file</span> Impor CSV
+        </a>
         <a href="product-add" class="btn btn-primary">+ Tambah Produk</a>
     </div>
 </div>

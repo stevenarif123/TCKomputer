@@ -1,7 +1,7 @@
 <?php
 /**
  * Database Warranty Text Update Script
- * Replaces "Garansi resmi" with "Garansi toko" or "Jaminan 100% Asli" in the active database.
+ * Replaces "Garansi resmi" with "Garansi toko" or "Jaminan Asli" in the active database.
  * Run this by visiting tckomputer.shop/maintenance/update_warranty_in_db.php on your browser.
  * Make sure to delete this file after running.
  */
@@ -13,13 +13,13 @@ try {
     
     // 1. Update store settings running ticker
     $stmt1 = $pdo->prepare("UPDATE store_settings SET 
-        running_ticker = REPLACE(running_ticker, 'Garansi Resmi Distributor', 'Jaminan 100% Asli'),
+        running_ticker = REPLACE(running_ticker, 'Garansi Resmi Distributor', 'Jaminan Asli'),
         updated_at = NOW()"
     );
     $stmt1->execute();
     
     $stmt2 = $pdo->prepare("UPDATE store_settings SET 
-        running_ticker = REPLACE(running_ticker, 'Garansi Resmi', 'Jaminan 100% Asli'),
+        running_ticker = REPLACE(running_ticker, 'Garansi Resmi', 'Jaminan Asli'),
         updated_at = NOW()"
     );
     $stmt2->execute();
@@ -41,7 +41,7 @@ try {
     echo "<h3 style='margin-top:0;'>Sukses!</h3>";
     echo "<p>Klaim garansi pada database berhasil diperbarui:</p>";
     echo "<ul>";
-    echo "<li>Teks 'Garansi Resmi' di running ticker diubah menjadi 'Jaminan 100% Asli'.</li>";
+    echo "<li>Teks 'Garansi Resmi' di running ticker diubah menjadi 'Jaminan Asli'.</li>";
     echo "<li>Catatan garansi produk yang bertuliskan 'Garansi resmi' diubah menjadi 'Garansi toko'.</li>";
     echo "</ul>";
     echo "<p style='margin-bottom:0; font-weight:bold; color:#9b2c2c;'>PENTING: Segera hapus file 'maintenance/update_warranty_in_db.php' dari server Anda demi keamanan.</p>";

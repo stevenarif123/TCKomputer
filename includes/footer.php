@@ -218,7 +218,10 @@ if (in_array($currentPage, $allowedPages)):
 </a>
 <?php endif; ?>
 
+<?php require_once __DIR__ . '/chat-widget.php'; ?>
+
 <!-- Main JavaScript -->
 <script src="assets/js/main.js?v=2.4"></script>
+
 </body>
 </html>

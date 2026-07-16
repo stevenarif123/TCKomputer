@@ -274,6 +274,7 @@ function applySecurityHeaders(): void
  */
 function cleanHtmlComments(string $buffer): string
 {
-    return preg_replace('/<!--(?!\[if)[\s\S]*?-->/', '', $buffer);
+    $cleaned = preg_replace('/<!--(?!\[if)[\s\S]*?-->/', '', $buffer);
+    return is_string($cleaned) ? $cleaned : $buffer;
 }
 

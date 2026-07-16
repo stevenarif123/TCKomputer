@@ -50,7 +50,7 @@ if (!empty($banners)) {
     // Approved static store introduction fallback; no campaign/promo banner is fabricated.
     $slides[] = [
         'title' => 'Selamat Datang di TC Komputer',
-        'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan jaminan 100% asli untuk workspace produktif Anda.',
+        'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dan asli untuk workspace produktif Anda.',
         'image' => 'assets/images/placeholder.svg',
         'link_url' => 'products',
         'is_promo' => false,
@@ -113,7 +113,7 @@ $bannerStyles = [
             <div class="relative z-10">
                 <span class="inline-block bg-white/20 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">Selamat Datang</span>
                 <h2 class="text-lg font-black tracking-tight leading-tight">TC Komputer Toraja</h2>
-                <p class="text-xs text-white/80 mt-1 max-w-[90%] font-medium">Solusi Kebutuhan IT & Aksesoris Terpercaya dengan Jaminan 100% Asli.</p>
+                <p class="text-xs text-white/80 mt-1 max-w-[90%] font-medium">Solusi Kebutuhan IT & Aksesoris Terpercaya dengan Jaminan Asli.</p>
             </div>
             
             <div class="mt-4 flex items-center justify-between relative z-10">

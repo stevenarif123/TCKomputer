@@ -19,7 +19,7 @@ try {
     if ($settings) {
         $ticker = $settings['running_ticker'] ?? '';
         if (strpos($ticker, 'Bebas Ongkir Wilayah Gowa & Makassar') !== false || strpos($ticker, 'Gowa & Makassar') !== false || strpos($ticker, 'PROMO MERDEKA') !== false) {
-            $newTicker = "⚡ Dapatkan perlengkapan IT, hardware, dan aksesoris komputer berkualitas tinggi dengan Jaminan 100% Asli • Konsultasi Rakit PC & Layanan Ramah Terpercaya!";
+            $newTicker = "⚡ Dapatkan perlengkapan IT, hardware, dan aksesoris komputer berkualitas tinggi dengan Jaminan Asli • Konsultasi Rakit PC & Layanan Ramah Terpercaya!";
             
             $stmtUpdate = $pdo->prepare("UPDATE store_settings SET running_ticker = ?, updated_at = NOW() WHERE id = ?");
             $stmtUpdate->execute([$newTicker, $settings['id']]);

@@ -26,6 +26,14 @@ $flashMessage = getFlashMessage();
 
 // Generate CSRF token for forms
 $csrfToken = generateCSRFToken();
+
+// Count unread admin chat messages
+$unreadChatCount = 0;
+try {
+    $unreadChatCount = (int) $pdo->query(
+        "SELECT COALESCE(SUM(unread_admin), 0) FROM chat_sessions WHERE status = 'active'"
+    )->fetchColumn();
+} catch (Exception $e) { /* Table may not exist yet */ }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -90,6 +98,14 @@ $csrfToken = generateCSRFToken();
                     <li><a href="flash-sales" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'flash-sales.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">bolt</span> Flash Sale</a></li>
                     <li><a href="promotions" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['promotions.php', 'promotion-add.php', 'promotion-edit.php']) ? 'active' : '' ?>"><span class="material-symbols-outlined">campaign</span> Promosi</a></li>
                     <li><a href="faqs" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['faqs.php', 'faq-add.php', 'faq-edit.php', 'faq-categories.php', 'faq-category-add.php', 'faq-category-edit.php']) ? 'active' : '' ?>"><span class="material-symbols-outlined">quiz</span> FAQ</a></li>
+                    <li>
+                        <a href="chats" class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['chats.php']) ? 'active' : '' ?>" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span style="display: inline-flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined">chat</span> Live Chat
+                            </span>
+                            <span class="chat-badge" style="background-color: var(--admin-danger, #ba1a1a); color: white; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: bold; min-width: 18px; text-align: center; display: <?= $unreadChatCount > 0 ? 'inline-block' : 'none' ?>;"><?= $unreadChatCount ?></span>
+                        </a>
+                    </li>
                     <li><a href="analytics" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'analytics.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">bar_chart</span> Analitik</a></li>
                     <li><a href="settings" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">settings</span> Pengaturan</a></li>
                     <li><a href="system-tester" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'system-tester.php' ? 'active' : '' ?>"><span class="material-symbols-outlined">fact_check</span> System Tester</a></li>

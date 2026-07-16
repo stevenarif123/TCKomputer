@@ -203,7 +203,7 @@ class HomepageIntegrationTest extends TestCase
         if ($banners === []) {
             return [[
                 'title' => 'Selamat Datang di TC Komputer',
-                'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan jaminan 100% asli untuk workspace produktif Anda.',
+                'description' => 'Menyediakan perangkat IT, komputer, dan aksesoris berkualitas tinggi dengan Jaminan asli untuk workspace produktif Anda.',
                 'image' => 'assets/images/placeholder.svg',
                 'link_url' => 'products',
                 'is_fallback' => true,
