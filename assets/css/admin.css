@@ -1782,3 +1782,7 @@ body.dark-mode .message-ai .message-bubble {
         max-width: 120px;
     }
 }
+
+.hidden {
+    display: none !important;
+}
