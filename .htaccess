@@ -7,10 +7,6 @@ Options -Indexes
 # Enable Rewrite Engine
 RewriteEngine On
 
-# Pass Authorization Header to PHP under CGI/FastCGI
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
-
 # Block direct access to config, includes, and tests directories
 RewriteRule ^config/ - [F,L]
 RewriteRule ^includes/ - [F,L]
