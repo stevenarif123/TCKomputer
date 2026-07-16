@@ -11,13 +11,13 @@ require_once __DIR__ . '/../includes/admin-header.php';
     <h2>Live Chat Pelanggan</h2>
 </div>
 
-<div class="chat-container">
+<div class="grid-2col-asym-rev chat-layout-grid">
     <!-- Left Column: Sesi Chat -->
-    <div class="chat-sessions-list">
+    <div class="admin-card chat-sidebar-card">
         <div class="chat-sessions-header">
             <div class="search-wrapper">
                 <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" id="session-search" placeholder="Cari nama / HP..." class="chat-search-input">
+                <input type="text" id="session-search" placeholder="Cari nama / HP..." class="form-input">
             </div>
             <div class="chat-filter-tabs">
                 <button class="filter-tab active" data-status="active">Aktif</button>
@@ -31,10 +31,10 @@ require_once __DIR__ . '/../includes/admin-header.php';
     </div>
 
     <!-- Right Column: Percakapan Aktif -->
-    <div class="chat-conversation" id="conversation-panel">
+    <div class="admin-card chat-main-card" id="conversation-panel">
         <div id="conversation-empty" class="conversation-empty">
-            <span class="material-symbols-outlined text-4xl" style="font-size: 64px; color: var(--admin-border);">chat</span>
-            <p style="margin-top: 15px; color: var(--admin-text-muted);">Pilih percakapan di sebelah kiri untuk mulai membaca dan membalas pesan.</p>
+            <span class="material-symbols-outlined" style="font-size: 64px; color: var(--admin-border);">chat</span>
+            <p style="margin-top: 15px; color: var(--admin-text-muted); font-weight: 500;">Pilih percakapan di sebelah kiri untuk mulai membaca dan membalas pesan.</p>
         </div>
         
         <div id="conversation-active" class="conversation-active hidden">
@@ -56,7 +56,7 @@ require_once __DIR__ . '/../includes/admin-header.php';
                 </div>
                 <div class="header-actions">
                     <button id="btn-close-session" class="btn btn-sm btn-danger">
-                        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">cancel</span>Tutup Chat
+                        <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span> Tutup Chat
                     </button>
                 </div>
             </div>
@@ -70,17 +70,17 @@ require_once __DIR__ . '/../includes/admin-header.php';
             <div class="quick-replies-container">
                 <span class="quick-replies-label">Balasan Cepat:</span>
                 <div class="quick-replies" id="quick-replies-list">
-                    <button class="quick-reply-btn">Halo, ada yang bisa kami bantu?</button>
-                    <button class="quick-reply-btn">Pesanan Anda sedang kami proses.</button>
-                    <button class="quick-reply-btn">Mohon tunggu sebentar, kami cek terlebih dahulu.</button>
-                    <button class="quick-reply-btn">Terima kasih telah menghubungi kami!</button>
+                    <button class="btn btn-outline btn-sm quick-reply-btn">Halo, ada yang bisa kami bantu?</button>
+                    <button class="btn btn-outline btn-sm quick-reply-btn">Pesanan Anda sedang kami proses.</button>
+                    <button class="btn btn-outline btn-sm quick-reply-btn">Mohon tunggu sebentar, kami cek.</button>
+                    <button class="btn btn-outline btn-sm quick-reply-btn">Terima kasih!</button>
                 </div>
             </div>
 
             <!-- Input Balasan -->
             <div class="conversation-input-area">
-                <textarea id="chat-reply-input" placeholder="Tulis balasan... (Ctrl+Enter untuk kirim)" rows="2"></textarea>
-                <button id="chat-reply-send" class="btn btn-primary">
+                <textarea id="chat-reply-input" class="form-textarea" placeholder="Tulis balasan... (Ctrl+Enter untuk kirim)" rows="1" style="min-height: 44px; padding-top: 11px;"></textarea>
+                <button id="chat-reply-send" class="btn btn-primary" style="height: 44px; width: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--admin-radius-sm);">
                     <span class="material-symbols-outlined">send</span>
                 </button>
             </div>
