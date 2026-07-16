@@ -28,7 +28,10 @@ try {
         $where = [];
         $params = [];
         
-        if ($status !== '') {
+        if ($status === 'unread') {
+            $where[] = 'unread_admin > 0';
+            $where[] = "status = 'active'";
+        } elseif ($status !== '') {
             $where[] = 'status = ?';
             $params[] = $status;
         }
