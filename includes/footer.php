@@ -198,26 +198,6 @@
     }
 </script>
 
-<!-- Floating WhatsApp Support Widget (Only visible on Home, Catalog, Categories, and Product Detail pages) -->
-<?php
-$currentPage = basename($_SERVER['PHP_SELF']);
-$allowedPages = ['index.php'];
-if (in_array($currentPage, $allowedPages)):
-    $rawPhone = $storeSettings['phone'] ?? '082293924242';
-    $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
-    if (strpos($cleanPhone, '0') === 0) {
-        $cleanPhone = '62' . substr($cleanPhone, 1);
-    }
-    $waNumber = $cleanPhone;
-?>
-<a href="https://wa.me/<?= $waNumber ?>?text=Halo%20TC%20Komputer,%20saya%20ingin%20bertanya%20terkait%20produk%20IT/Hardware" target="_blank" class="fixed bottom-6 right-6 z-[90] bg-[#25D366] text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-[#20ba59] transition-all flex items-center gap-2 select-none group border border-white/10" title="Hubungi CS WhatsApp">
-    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.59 1.978 14.12 .952 11.5 1.052c-5.437 0-9.862 4.371-9.866 9.8-.001 1.762.483 3.486 1.398 5.024l-.993 3.628 3.738-.98c1.512.825 3.203 1.25 4.908 1.25zm5.716-11.111c.29-.116.48-.194.596-.388.116-.194.116-.1.058-.214-.058-.116-.483-1.162-.662-1.59-.174-.42-.35-.362-.483-.37l-.407-.008c-.135 0-.358.05-.546.254-.188.204-.717.7-.717 1.709 0 1.008.733 1.977.836 2.113.103.136 1.443 2.203 3.496 3.088.488.21 1.02.34 1.378.373.358.034.685.016.942-.022.286-.042.88-.36 1.004-.708.125-.348.125-.646.088-.708-.037-.062-.135-.098-.285-.174-.15-.076-.88-.435-1.016-.484-.136-.05-.236-.076-.336.076-.1.15-.388.484-.476.584-.088.1-.176.11-.326.035-.15-.075-.632-.233-1.204-.74-.445-.395-.745-.884-.833-1.034-.088-.15-.01-.23.066-.305.068-.067.15-.175.225-.262.075-.088.1-.15.15-.25.05-.1.025-.188-.013-.263l-.448-1.077c-.12-.29-.25-.25-.34-.25z"/>
-    </svg>
-    <span class="text-xs font-black tracking-tight">Tanya CS</span>
-</a>
-<?php endif; ?>
-
 <?php require_once __DIR__ . '/chat-widget.php'; ?>
 
 <!-- Main JavaScript -->

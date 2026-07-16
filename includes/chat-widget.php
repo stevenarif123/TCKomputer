@@ -12,13 +12,13 @@ $csrfToken = isset($csrfToken) ? $csrfToken : (function_exists('generateCSRFToke
 ?>
 
 <!-- Floating Chat Button -->
-<button id="chat-widget-button" class="fixed bottom-6 z-[90] w-14 h-14 rounded-full bg-[#0061A4] hover:bg-[#004e85] text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none <?= ($currentPage === 'index.php') ? 'right-28' : 'right-6' ?>" title="Chat dengan CS TCKomputer">
+<button id="chat-widget-button" class="fixed bottom-24 md:bottom-6 right-6 z-[90] w-14 h-14 rounded-full bg-[#0061A4] hover:bg-[#004e85] text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none" title="Chat dengan CS TCKomputer">
     <span class="material-symbols-outlined text-2xl" id="chat-btn-icon">chat</span>
     <span id="chat-widget-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
 </button>
 
 <!-- Chat Widget Panel -->
-<div id="chat-widget-panel" class="fixed bottom-24 z-[100] w-[380px] h-[500px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col hidden overflow-hidden transition-all duration-300 transform scale-95 opacity-0 <?= ($currentPage === 'index.php') ? 'right-28' : 'right-6' ?>">
+<div id="chat-widget-panel" class="fixed bottom-40 md:bottom-24 right-6 z-[100] w-[380px] h-[500px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col hidden overflow-hidden transition-all duration-300 transform scale-95 opacity-0">
     <!-- Header -->
     <div class="bg-[#0061A4] text-white px-4 py-3.5 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
