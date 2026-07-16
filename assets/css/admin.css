@@ -1248,15 +1248,11 @@ body.dark-mode .notepad-textarea { background: rgba(255,255,255,0.025); }
 
 .chat-layout-grid {
     margin-top: 10px;
-    display: flex;
-    gap: 28px;
     height: calc(100vh - 180px);
     min-height: 520px;
 }
 
 .chat-sidebar-card {
-    width: 33.333%;
-    min-width: 300px;
     padding: 0 !important;
     display: flex;
     flex-direction: column;
@@ -1264,7 +1260,6 @@ body.dark-mode .notepad-textarea { background: rgba(255,255,255,0.025); }
 }
 
 .chat-main-card {
-    flex: 1;
     padding: 0 !important;
     display: flex;
     flex-direction: column;

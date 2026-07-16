@@ -11,7 +11,7 @@ require_once __DIR__ . '/../includes/admin-header.php';
     <h2>Live Chat Pelanggan</h2>
 </div>
 
-<div class="chat-layout-grid">
+<div class="grid-2col-asym-rev chat-layout-grid">
     <!-- Left Column: Sesi Chat -->
     <div class="admin-card chat-sidebar-card">
         <div class="chat-filter-tabs">
