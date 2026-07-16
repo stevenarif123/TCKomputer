@@ -137,6 +137,7 @@ Interaksi AI Agent untuk membaca dan menjawab chat pelanggan.
     - `unread` (int): `1` untuk mengambil hanya chat yang belum dibaca admin/AI.
   - **Contoh Request**:
     `GET /api/v1/chat.php?unread=1`
+  - **Struktur Respon**: Setiap objek sesi di dalam array mengandung properti status seperti `unread_admin` (jumlah pesan belum dibaca admin) dan `unread_user` (jumlah pesan belum dibaca pelanggan).
 
 * **Mengambil Log Chat / Isi Pesan (GET)**
   - **Parameter Wajib**: `session_id` (int)
@@ -144,6 +145,7 @@ Interaksi AI Agent untuk membaca dan menjawab chat pelanggan.
   - **Contoh Request**:
     `GET /api/v1/chat.php?session_id=8&after_id=142`
   - **Keterangan**: Secara otomatis mereset hitungan belum dibaca admin (`unread_admin`) menjadi `0` begitu dibaca oleh AI.
+  - **Struktur Respon**: Objek pesan mengandung properti `"is_read": 1` (jika sudah dibaca penerima) atau `"is_read": 0` (jika belum dibaca/hanya terkirim). Ini mencakup status centang pesan untuk admin maupun pembeli.
 
 * **Membalas Pesan Chat (POST)**
   - **Body (JSON)**:
