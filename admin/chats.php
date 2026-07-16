@@ -357,16 +357,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
-                        appendMessage(msg);
+                        if (!document.getElementById(`msg-${msg.id}`)) {
+                            appendMessage(msg);
+                        }
                         if (msg.id > lastMessageId) {
                             lastMessageId = msg.id;
                         }
                     });
                 }
+
+                if (data.last_read_id) {
+                    updateAdminMessageReadStatus(data.last_read_id);
+                }
             }
         } catch (err) {
             console.error('Error polling messages:', err);
         }
+    }
+
+    // Update message read status checkmarks for admin messages
+    function updateAdminMessageReadStatus(lastReadId) {
+        document.querySelectorAll('.message-admin').forEach(msgDiv => {
+            const msgId = parseInt(msgDiv.id.replace('msg-', ''));
+            if (!isNaN(msgId) && msgId <= lastReadId) {
+                const statusIcon = msgDiv.querySelector('.msg-status');
+                if (statusIcon && statusIcon.textContent !== 'done_all') {
+                    statusIcon.textContent = 'done_all';
+                    statusIcon.style.color = '#adc6ff'; // light blue/cyan for dark admin bubble
+                }
+            }
+        });
     }
 
     // Append Message to UI
@@ -399,13 +419,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 senderName = msg.sender_name;
             }
 
+            let checkmarkHtml = '';
+            if (isAdmin) {
+                let checkmarkIcon = 'done';
+                let checkmarkStyle = 'style="color: rgba(255,255,255,0.6);"';
+                if (msg.is_read == 1) {
+                    checkmarkIcon = 'done_all';
+                    checkmarkStyle = 'style="color: #adc6ff;"';
+                }
+                checkmarkHtml = `<span class="material-symbols-outlined msg-status" ${checkmarkStyle} style="font-size: 14px; margin-left: 4px; vertical-align: middle;">${checkmarkIcon}</span>`;
+            }
+
             msgDiv.className = `chat-message ${senderClass}`;
             msgDiv.innerHTML = `
                 ${avatarHtml}
                 <div class="message-body">
                     <div class="message-meta">
                         <span class="message-sender-name">${escapeHtml(senderName)}</span>
-                        <span class="message-time">${msg.time}</span>
+                        <span class="message-time">${msg.time}${checkmarkHtml}</span>
                     </div>
                     <div class="message-bubble">
                         <div class="message-text">${msg.message.replace(/\n/g, '<br>')}</div>
